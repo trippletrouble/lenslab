@@ -1,0 +1,23 @@
+## LensLab AI / KI specific files
+GEMINI.md
+**/GEMINI.md
+
+## Visual Studio & Build files
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.userprefs
+*.sln.docstates
+
+## Rider & VS Code
+.idea/
+.vscode/
+
+## Test / Temp outputs
+TestResults/
+*.log
