@@ -1,7 +1,3 @@
-## LensLab AI / KI specific files
-GEMINI.md
-**/GEMINI.md
-
 ## Visual Studio & Build files
 bin/
 obj/
@@ -21,3 +17,4 @@ obj/
 ## Test / Temp outputs
 TestResults/
 *.log
+LensLab/GEMINI.md
