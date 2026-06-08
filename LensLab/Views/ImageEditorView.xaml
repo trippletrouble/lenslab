@@ -1,0 +1,31 @@
+<UserControl x:Class="LensLab.Views.ImageEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:LensLab.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="#FF1A1A1A">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- The image display, bound directly to the DataContext (which is a BitmapSource) -->
+        <Image Source="{Binding}" 
+               Stretch="Uniform" 
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Center"
+               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+        <!-- Placeholder displayed when the DataContext is null -->
+        <TextBlock Text="No image loaded" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" 
+                   Foreground="#66FFFFFF" 
+                   FontSize="16"
+                   Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}"/>
+    </Grid>
+</UserControl>

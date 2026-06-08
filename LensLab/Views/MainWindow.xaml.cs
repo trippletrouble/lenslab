@@ -1,4 +1,6 @@
+using System.Windows;
 using MahApps.Metro.Controls;
+using LensLab.ViewModels;
 
 namespace LensLab.Views;
 
@@ -13,5 +15,27 @@ public partial class MainWindow : MetroWindow
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+    }
+
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+        if (files?.Length > 0)
+        {
+            var filePath = files[0];
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.OpenImageCommand.Execute(filePath);
+            }
+        }
     }
 }

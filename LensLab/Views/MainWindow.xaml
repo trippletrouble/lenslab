@@ -5,16 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:viewModels="clr-namespace:LensLab.ViewModels"
+        xmlns:views="clr-namespace:LensLab.Views"
+        xmlns:converters="clr-namespace:LensLab.Converters"
         mc:Ignorable="d"
         Title="LensLab" 
         MinWidth="1200" 
         MinHeight="700" 
         Height="700" 
         Width="1200"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        AllowDrop="True"
+        Drop="OnDrop"
+        DragOver="OnDragOver">
 
     <mah:MetroWindow.Resources>
         <viewModels:MainViewModel x:Key="MainViewModel" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </mah:MetroWindow.Resources>
 
     <mah:MetroWindow.DataContext>
@@ -24,7 +30,7 @@
     <DockPanel>
         <!-- Top Toolbar -->
         <ToolBar DockPanel.Dock="Top">
-            <Button Content="Open" />
+            <Button Content="Open" Command="{Binding OpenImageCommand}" />
         </ToolBar>
 
         <!-- Bottom Status Bar -->
@@ -44,18 +50,11 @@
 
             <!-- Left Panel (Filter Gallery Placeholder) -->
             <Grid Grid.Column="0">
-                <!-- Add visual placeholder border for design review -->
                 <Border BorderBrush="#33FFFFFF" BorderThickness="0,0,1,0" />
             </Grid>
 
-            <!-- Middle Panel (Image Editor / Preview Placeholder) -->
-            <Grid Grid.Column="1">
-                <TextBlock Text="No image loaded" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" 
-                           Foreground="#66FFFFFF" 
-                           FontSize="16"/>
-            </Grid>
+            <!-- Middle Panel (Image Editor View) -->
+            <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" Grid.Column="1" />
 
             <!-- Right Panel (Adjustment sliders Placeholder) -->
             <Grid Grid.Column="2">
