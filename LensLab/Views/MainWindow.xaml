@@ -19,13 +19,9 @@
         DragOver="OnDragOver">
 
     <mah:MetroWindow.Resources>
-        <viewModels:MainViewModel x:Key="MainViewModel" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </mah:MetroWindow.Resources>
 
-    <mah:MetroWindow.DataContext>
-        <StaticResource ResourceKey="MainViewModel" />
-    </mah:MetroWindow.DataContext>
 
     <DockPanel>
         <!-- Top Toolbar -->

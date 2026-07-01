@@ -1,0 +1,17 @@
+{
+  "Name": "Tri-X 400",
+  "Manufacturer": "Kodak",
+  "Brightness": -2.0,
+  "Contrast": 25.0,
+  "Saturation": -100.0,
+  "Temperature": 0.0,
+  "Tint": 0.0,
+  "RedMultiplier": 1.0,
+  "GreenMultiplier": 1.0,
+  "BlueMultiplier": 1.0,
+  "Grain": 25.0,
+  "Vignette": 18.0,
+  "Fade": 8.0,
+  "Highlights": 10.0,
+  "Shadows": -12.0
+}

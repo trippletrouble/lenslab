@@ -1,0 +1,17 @@
+{
+  "Name": "800Tungsten",
+  "Manufacturer": "CineStill",
+  "Brightness": 3.0,
+  "Contrast": 14.0,
+  "Saturation": 5.0,
+  "Temperature": -40.0,
+  "Tint": -8.0,
+  "RedMultiplier": 0.9,
+  "GreenMultiplier": 1.05,
+  "BlueMultiplier": 1.25,
+  "Grain": 20.0,
+  "Vignette": 15.0,
+  "Fade": 5.0,
+  "Highlights": 25.0,
+  "Shadows": -4.0
+}

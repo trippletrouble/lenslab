@@ -1,0 +1,17 @@
+{
+  "Name": "HP5 Plus 400",
+  "Manufacturer": "Ilford",
+  "Brightness": 1.0,
+  "Contrast": 12.0,
+  "Saturation": -100.0,
+  "Temperature": 0.0,
+  "Tint": 0.0,
+  "RedMultiplier": 1.0,
+  "GreenMultiplier": 1.0,
+  "BlueMultiplier": 1.0,
+  "Grain": 18.0,
+  "Vignette": 12.0,
+  "Fade": 14.0,
+  "Highlights": -5.0,
+  "Shadows": 5.0
+}

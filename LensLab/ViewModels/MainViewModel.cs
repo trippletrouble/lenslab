@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -16,6 +17,7 @@ namespace LensLab.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly IFileDialogService _fileDialogService;
+    private readonly FilterLoaderService _filterLoaderService;
 
     [ObservableProperty]
     private string _statusText = "Ready";
@@ -26,13 +28,42 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ImageModel? _currentImage;
 
+    [ObservableProperty]
+    private List<FilterPreset> _filters = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     public MainViewModel()
     {
         _fileDialogService = new FileDialogService();
+        _filterLoaderService = new FilterLoaderService();
     }
+
+    /// <summary>
+    /// Asynchronously initializes the ViewModel, loading all available filters.
+    /// </summary>
+    /// <returns>A task representing the asynchronous initialization operation.</returns>
+    public async Task InitializeAsync()
+    {
+        try
+        {
+            IsBusy = true;
+            StatusText = "Loading filters...";
+            Filters = await _filterLoaderService.LoadAllFiltersAsync();
+            StatusText = $"{Filters.Count} filters loaded";
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Error loading filters";
+            System.Diagnostics.Debug.WriteLine($"Error initializing filters: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
 
     /// <summary>
     /// Asynchronously opens an image file. If no filePath is provided, shows the file dialog.

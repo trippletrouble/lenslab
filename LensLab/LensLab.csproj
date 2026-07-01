@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -14,4 +14,11 @@
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="6.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Resources\Filters\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
+

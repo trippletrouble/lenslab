@@ -1,0 +1,17 @@
+{
+  "Name": "Ektar 100",
+  "Manufacturer": "Kodak",
+  "Brightness": 3.0,
+  "Contrast": 15.0,
+  "Saturation": 22.0,
+  "Temperature": -2.0,
+  "Tint": 3.0,
+  "RedMultiplier": 1.12,
+  "GreenMultiplier": 0.98,
+  "BlueMultiplier": 1.05,
+  "Grain": 0.0,
+  "Vignette": 15.0,
+  "Fade": 0.0,
+  "Highlights": 8.0,
+  "Shadows": -10.0
+}
