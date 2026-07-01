@@ -17,4 +17,11 @@ obj/
 ## Test / Temp outputs
 TestResults/
 *.log
+
+## Antigravity / Gemini files
+GEMINI.md
 LensLab/GEMINI.md
+LensLab/docs/
+docs/
+.gemini/
+
