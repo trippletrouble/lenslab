@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Base Color Brushes -->
+    <SolidColorBrush x:Key="BackgroundDeepMatteBlackBrush" Color="#121212" />
+    <SolidColorBrush x:Key="PanelDarkSlateBrush" Color="#1A1A1A" />
+    <SolidColorBrush x:Key="ControlDarkBrush" Color="#222222" />
+    <SolidColorBrush x:Key="ControlHoverDarkBrush" Color="#1E1E1E" />
+    <SolidColorBrush x:Key="AccentVintageAmberBrush" Color="#FF9500" />
+    <SolidColorBrush x:Key="BorderSlateBrush" Color="#2C2C2D" />
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="#FF9500" />
+    <SolidColorBrush x:Key="BorderHoverBrush" Color="#4A4A4D" />
+    <SolidColorBrush x:Key="TextMutedGreyBrush" Color="#9A9A9E" />
+    <SolidColorBrush x:Key="TextPrimaryWhiteBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SliderTrackBrush" Color="#2D2D30" />
+</ResourceDictionary>

@@ -16,46 +16,93 @@
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
         Drop="OnDrop"
-        DragOver="OnDragOver">
+        DragOver="OnDragOver"
+        Background="{StaticResource BackgroundDeepMatteBlackBrush}"
+        GlowBrush="{StaticResource BorderSlateBrush}"
+        BorderThickness="1"
+        WindowTitleBrush="{StaticResource PanelDarkSlateBrush}"
+        NonActiveWindowTitleBrush="{StaticResource PanelDarkSlateBrush}"
+        TitleForeground="{StaticResource TextPrimaryWhiteBrush}"
+        TitleAlignment="Center"
+        TitleCharacterCasing="Normal">
 
     <mah:MetroWindow.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </mah:MetroWindow.Resources>
 
-
     <DockPanel>
-        <!-- Top Toolbar -->
-        <ToolBar DockPanel.Dock="Top">
-            <Button Content="Open" Command="{Binding OpenImageCommand}" />
-        </ToolBar>
+        <!-- Top Toolbar (Flat and Modern Panel) -->
+        <Border DockPanel.Dock="Top" 
+                Background="{StaticResource PanelDarkSlateBrush}" 
+                BorderBrush="{StaticResource BorderSlateBrush}" 
+                BorderThickness="0,0,0,1" 
+                Padding="12,8">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Open Image" 
+                        Command="{Binding OpenImageCommand}"
+                        Padding="16,6" />
+            </StackPanel>
+        </Border>
 
-        <!-- Bottom Status Bar -->
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusText}" />
-            </StatusBarItem>
-        </StatusBar>
+        <!-- Bottom Status Bar (Flat Panel) -->
+        <Border DockPanel.Dock="Bottom" 
+                Background="{StaticResource PanelDarkSlateBrush}" 
+                BorderBrush="{StaticResource BorderSlateBrush}" 
+                BorderThickness="0,1,0,0" 
+                Padding="12,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding StatusText}" 
+                           Style="{StaticResource BaseTextBlockStyle}" 
+                           Foreground="{StaticResource TextMutedGreyBrush}" />
+                <TextBlock Grid.Column="1" 
+                           Text="LensLab v1.0" 
+                           Style="{StaticResource MonospaceDisplayTextBlockStyle}" 
+                           Foreground="{StaticResource TextMutedGreyBrush}" />
+            </Grid>
+        </Border>
 
         <!-- Main Content Area: 3 Columns -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="280" />
             </Grid.ColumnDefinitions>
 
-            <!-- Left Panel (Filter Gallery Placeholder) -->
-            <Grid Grid.Column="0">
-                <Border BorderBrush="#33FFFFFF" BorderThickness="0,0,1,0" />
+            <!-- Left Panel (Filter Gallery Background & Divider) -->
+            <Border Grid.Column="0" 
+                    Background="{StaticResource PanelDarkSlateBrush}" 
+                    BorderBrush="{StaticResource BorderSlateBrush}" 
+                    BorderThickness="0,0,1,0">
+                <Grid Margin="12">
+                    <TextBlock Text="Filter Presets" 
+                               Style="{StaticResource TitleTextBlockStyle}" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Top" />
+                </Grid>
+            </Border>
+
+            <!-- Middle Panel (Image Editor View Area) -->
+            <Grid Grid.Column="1" Margin="16">
+                <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" />
             </Grid>
 
-            <!-- Middle Panel (Image Editor View) -->
-            <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" Grid.Column="1" />
-
-            <!-- Right Panel (Adjustment sliders Placeholder) -->
-            <Grid Grid.Column="2">
-                <Border BorderBrush="#33FFFFFF" BorderThickness="1,0,0,0" />
-            </Grid>
+            <!-- Right Panel (Adjustment Panel Background & Divider) -->
+            <Border Grid.Column="2" 
+                    Background="{StaticResource PanelDarkSlateBrush}" 
+                    BorderBrush="{StaticResource BorderSlateBrush}" 
+                    BorderThickness="1,0,0,0">
+                <Grid Margin="12">
+                    <TextBlock Text="Adjustments" 
+                               Style="{StaticResource TitleTextBlockStyle}" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Top" />
+                </Grid>
+            </Border>
         </Grid>
     </DockPanel>
 </mah:MetroWindow>
