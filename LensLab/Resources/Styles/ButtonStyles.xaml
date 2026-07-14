@@ -26,7 +26,8 @@
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}"
-                                          RecognizesAccessKey="***ENTFERNT***" />
+                                          RecognizesAccessKey="***ENTFERNT***"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <!-- Hover State -->
@@ -79,7 +80,8 @@
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}"
-                                          RecognizesAccessKey="***ENTFERNT***" />
+                                          RecognizesAccessKey="***ENTFERNT***"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <!-- Hover State -->

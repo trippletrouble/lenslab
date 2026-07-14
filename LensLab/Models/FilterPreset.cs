@@ -99,4 +99,78 @@ public class FilterPreset
     /// </summary>
     [JsonPropertyName("Shadows")]
     public double Shadows { get; set; } = 0.0;
+
+    // HSL Red
+    [JsonPropertyName("HueRed")]
+    public double HueRed { get; set; } = 0.0;
+    [JsonPropertyName("SaturationRed")]
+    public double SaturationRed { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceRed")]
+    public double LuminanceRed { get; set; } = 0.0;
+
+    // HSL Orange
+    [JsonPropertyName("HueOrange")]
+    public double HueOrange { get; set; } = 0.0;
+    [JsonPropertyName("SaturationOrange")]
+    public double SaturationOrange { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceOrange")]
+    public double LuminanceOrange { get; set; } = 0.0;
+
+    // HSL Yellow
+    [JsonPropertyName("HueYellow")]
+    public double HueYellow { get; set; } = 0.0;
+    [JsonPropertyName("SaturationYellow")]
+    public double SaturationYellow { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceYellow")]
+    public double LuminanceYellow { get; set; } = 0.0;
+
+    // HSL Green
+    [JsonPropertyName("HueGreen")]
+    public double HueGreen { get; set; } = 0.0;
+    [JsonPropertyName("SaturationGreen")]
+    public double SaturationGreen { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceGreen")]
+    public double LuminanceGreen { get; set; } = 0.0;
+
+    // HSL Aqua
+    [JsonPropertyName("HueAqua")]
+    public double HueAqua { get; set; } = 0.0;
+    [JsonPropertyName("SaturationAqua")]
+    public double SaturationAqua { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceAqua")]
+    public double LuminanceAqua { get; set; } = 0.0;
+
+    // HSL Blue
+    [JsonPropertyName("HueBlue")]
+    public double HueBlue { get; set; } = 0.0;
+    [JsonPropertyName("SaturationBlue")]
+    public double SaturationBlue { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceBlue")]
+    public double LuminanceBlue { get; set; } = 0.0;
+
+    // HSL Purple
+    [JsonPropertyName("HuePurple")]
+    public double HuePurple { get; set; } = 0.0;
+    [JsonPropertyName("SaturationPurple")]
+    public double SaturationPurple { get; set; } = 0.0;
+    [JsonPropertyName("LuminancePurple")]
+    public double LuminancePurple { get; set; } = 0.0;
+
+    // HSL Magenta
+    [JsonPropertyName("HueMagenta")]
+    public double HueMagenta { get; set; } = 0.0;
+    [JsonPropertyName("SaturationMagenta")]
+    public double SaturationMagenta { get; set; } = 0.0;
+    [JsonPropertyName("LuminanceMagenta")]
+    public double LuminanceMagenta { get; set; } = 0.0;
+
+    // Beginner Metadata
+    [JsonPropertyName("Category")]
+    public string Category { get; set; } = "General";
+
+    [JsonPropertyName("Description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("RecommendedFor")]
+    public string RecommendedFor { get; set; } = "";
 }

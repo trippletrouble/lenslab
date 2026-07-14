@@ -13,7 +13,7 @@
         
         <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
             <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="Filter.Manufacturer" />
+                <PropertyGroupDescription PropertyName="Filter.Category" />
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
     </UserControl.Resources>
@@ -87,7 +87,7 @@
                                 BorderBrush="{StaticResource BorderSlateBrush}"
                                 BorderThickness="1"
                                 CornerRadius="5"
-                                Padding="6"
+                                Padding="8"
                                 Margin="0,0,0,8"
                                 Cursor="Hand"
                                 HorizontalAlignment="Stretch">
@@ -97,12 +97,26 @@
                                     <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
                                 </Border>
                                 
-                                <!-- Text labels -->
+                                <!-- Filter Name -->
                                 <TextBlock Text="{Binding Filter.Name}" 
                                            Style="{StaticResource BaseTextBlockStyle}" 
                                            Foreground="{StaticResource TextPrimaryWhiteBrush}" 
                                            FontWeight="SemiBold" 
-                                           FontSize="11" />
+                                           FontSize="12" />
+                                
+                                <!-- Manufacturer Subtitle -->
+                                <TextBlock Text="{Binding Filter.Manufacturer, StringFormat='by {0}'}" 
+                                           Style="{StaticResource BaseTextBlockStyle}" 
+                                           Foreground="{StaticResource TextMutedGreyBrush}" 
+                                           FontSize="10" 
+                                           Margin="0,1,0,4" />
+
+                                <!-- Recommended For Tags -->
+                                <TextBlock Text="{Binding Filter.RecommendedFor, StringFormat='📷 {0}'}" 
+                                           Style="{StaticResource BaseTextBlockStyle}" 
+                                           Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                           FontSize="9" 
+                                           FontStyle="Italic" />
                             </StackPanel>
                         </Border>
                         <DataTemplate.Triggers>

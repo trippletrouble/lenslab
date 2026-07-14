@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,6 +21,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IFileDialogService _fileDialogService;
     private readonly FilterLoaderService _filterLoaderService;
     private readonly ImageProcessingService _imageProcessingService;
+    private CancellationTokenSource? _renderCts;
 
     [ObservableProperty]
     private string _statusText = "Ready";
@@ -39,6 +41,11 @@ public partial class MainViewModel : ObservableObject
     public FilterGalleryViewModel FilterGallery { get; }
 
     /// <summary>
+    /// Gets the ViewModel for manual slider adjustments.
+    /// </summary>
+    public AdjustmentViewModel Adjustments { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     public MainViewModel()
@@ -49,6 +56,9 @@ public partial class MainViewModel : ObservableObject
         
         FilterGallery = new FilterGalleryViewModel();
         FilterGallery.FilterSelected += OnFilterSelected;
+
+        Adjustments = new AdjustmentViewModel();
+        Adjustments.AdjustmentChanged += OnAdjustmentChanged;
     }
 
     /// <summary>
@@ -76,31 +86,78 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Handler that executes whenever a slider value or opacity changes.
+    /// Cancels any active rendering, debounces inputs, and starts a new one on the Preview image.
+    /// </summary>
+    private async void OnAdjustmentChanged(object? sender, EventArgs e)
+    {
+        if (CurrentImage == null || CurrentImage.PreviewImage == null) return;
+
+        try
+        {
+            _renderCts?.Cancel();
+            _renderCts = new CancellationTokenSource();
+            var token = _renderCts.Token;
+
+            // Debounce delay to prevent GC and calculation spam during continuous sliding
+            await Task.Delay(20, token);
+
+            // Get selected filter from gallery
+            var filter = FilterGallery.SelectedFilter?.Filter;
+
+            var processedImage = await _imageProcessingService.ApplyEditAsync(
+                CurrentImage.PreviewImage,
+                Adjustments.Settings,
+                filter,
+                Adjustments.FilterOpacity,
+                token);
+
+            CurrentImage.CurrentImage = processedImage;
+            OnPropertyChanged(nameof(CurrentImage));
+        }
+        catch (OperationCanceledException)
+        {
+            // Silently ignore cancellation
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error applying adjustments: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Handler that executes whenever a filter selection changes in the gallery.
-    /// Applies the selected filter to the original image and updates the viewport.
+    /// Applies the selected filter to the preview image and updates the viewport.
     /// </summary>
     private async void OnFilterSelected(object? sender, FilterPreset? filter)
     {
-        if (CurrentImage == null || CurrentImage.OriginalImage == null) return;
+        if (CurrentImage == null || CurrentImage.PreviewImage == null) return;
 
         try
         {
             IsBusy = true;
             StatusText = filter != null ? $"Applying {filter.Name}..." : "Removing filter...";
 
-            // Apply filter in background thread
+            _renderCts?.Cancel();
+            _renderCts = new CancellationTokenSource();
+            var token = _renderCts.Token;
+
+            // Apply selected filter combined with current slider settings
             var processedImage = await _imageProcessingService.ApplyEditAsync(
-                CurrentImage.OriginalImage,
-                new AdjustmentSettings(), // slider settings are empty for now
+                CurrentImage.PreviewImage,
+                Adjustments.Settings,
                 filter,
-                CancellationToken.None);
+                Adjustments.FilterOpacity,
+                token);
 
             CurrentImage.CurrentImage = processedImage;
-            
-            // Raise property changed to notify the UI to refresh its Image source binding
             OnPropertyChanged(nameof(CurrentImage));
             
             StatusText = filter != null ? $"{filter.Name} applied" : "Filter removed";
+        }
+        catch (OperationCanceledException)
+        {
+            // Silently ignore cancellation
         }
         catch (Exception ex)
         {
@@ -115,7 +172,7 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>
     /// Asynchronously opens an image file. If no filePath is provided, shows the file dialog.
-    /// Loads the image into memory with OnLoad cache option, freezes it for safety, and sets CurrentImage.
+    /// Loads the image into memory, generates a 1200px scaled preview version, and sets CurrentImage.
     /// </summary>
     /// <param name="filePath">Optional file path to load directly.</param>
     [RelayCommand]
@@ -148,10 +205,26 @@ public partial class MainViewModel : ObservableObject
                 return (BitmapSource)bitmap;
             });
 
+            // Generate scaled preview (max 1200px dimension) for live UI slider updates
+            BitmapSource previewBitmap = await Task.Run(() =>
+            {
+                double maxDim = Math.Max(loadedBitmap.PixelWidth, loadedBitmap.PixelHeight);
+                if (maxDim > 1200.0)
+                {
+                    double scale = 1200.0 / maxDim;
+                    var scaleTransform = new ScaleTransform(scale, scale);
+                    var resized = new TransformedBitmap(loadedBitmap, scaleTransform);
+                    resized.Freeze();
+                    return (BitmapSource)resized;
+                }
+                return loadedBitmap;
+            });
+
             CurrentImage = new ImageModel
             {
                 OriginalImage = loadedBitmap,
-                CurrentImage = loadedBitmap,
+                CurrentImage = previewBitmap,
+                PreviewImage = previewBitmap,
                 FilePath = filePath,
                 FileName = Path.GetFileName(filePath),
                 Width = loadedBitmap.PixelWidth,

@@ -58,7 +58,23 @@ public partial class FilterGalleryViewModel : ObservableObject
             IsLoading = true;
 
             // Load presets from JSON files
-            var presets = await _filterLoaderService.LoadAllFiltersAsync();
+            var loadedPresets = await _filterLoaderService.LoadAllFiltersAsync();
+
+            // Sort presets by category order (Portrait -> Vintage -> Street -> Cinematic -> Monochrome)
+            Func<string, int> getCategoryWeight = (cat) => cat switch
+            {
+                "Portrait" => 0,
+                "Vintage & Warm" => 1,
+                "Street & Moody" => 2,
+                "Cinematic & Flat" => 3,
+                "Monochrome" => 4,
+                _ => 5
+            };
+
+            var presets = loadedPresets
+                .OrderBy(p => getCategoryWeight(p.Category))
+                .ThenBy(p => p.Name)
+                .ToList();
 
             // Downscale the image to 120px width to speed up thumbnail generation
             double scale = 120.0 / sourceImage.PixelWidth;

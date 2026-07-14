@@ -1,0 +1,278 @@
+<UserControl x:Class="LensLab.Views.AdjustmentPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="280">
+    
+    <UserControl.Resources>
+        <!-- Style for section headers inside the panel -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource AccentVintageAmberBrush}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Margin" Value="0,16,0,8" />
+        </Style>
+
+        <!-- Style for slider labels -->
+        <Style x:Key="SliderLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryWhiteBrush}" />
+        </Style>
+
+        <!-- Style for slider value indicators -->
+        <Style x:Key="SliderValueStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource TextMutedGreyBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource PanelDarkSlateBrush}">
+        <DockPanel Margin="16,8,16,16">
+            <TextBlock Text="Adjustments" 
+                       DockPanel.Dock="Top" 
+                       Style="{StaticResource TitleTextBlockStyle}" 
+                       Margin="0,0,0,12" />
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,0,8,0">
+                    
+                    <!-- Section: Filter Strength -->
+                    <TextBlock Text="Filter Preset" Style="{StaticResource SectionHeaderStyle}" Margin="0,4,0,8" />
+                    
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Strength" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding FilterOpacity, StringFormat={}{0:0}%}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="0" Maximum="100" 
+                                Value="{Binding FilterOpacity, Mode=TwoWay}" 
+                                Tag="100" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
+
+                    <!-- Section: Exposure -->
+                    <TextBlock Text="Exposure &amp; Contrast" Style="{StaticResource SectionHeaderStyle}" />
+                    
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Brightness" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Brightness, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Brightness, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Contrast" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Contrast, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Contrast, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
+
+                    <!-- Section: Color -->
+                    <TextBlock Text="Color Balance" Style="{StaticResource SectionHeaderStyle}" />
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Saturation" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Saturation, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Saturation, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Temperature" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Temperature, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Temperature, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tint" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Tint, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Tint, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
+
+                    <!-- Section: Tone Details -->
+                    <TextBlock Text="Light &amp; Shadow Detail" Style="{StaticResource SectionHeaderStyle}" />
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Highlights" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Highlights, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Highlights, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Shadows" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Shadows, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="-100" Maximum="100" 
+                                Value="{Binding Settings.Shadows, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
+
+                    <!-- Section: Effects -->
+                    <TextBlock Text="Analog Effects" Style="{StaticResource SectionHeaderStyle}" />
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Vignette" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Vignette, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="0" Maximum="100" 
+                                Value="{Binding Settings.Vignette, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Grain" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Grain, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="0" Maximum="100" 
+                                Value="{Binding Settings.Grain, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Fade (Matte)" Style="{StaticResource SliderLabelStyle}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Settings.Fade, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
+                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
+                                Minimum="0" Maximum="100" 
+                                Value="{Binding Settings.Fade, Mode=TwoWay}" 
+                                Tag="0" 
+                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                    </Grid>
+
+                    <!-- Reset & Save Buttons -->
+                    <StackPanel Margin="0,16,0,16">
+                        <Button Content="Reset All Adjustments" 
+                                Command="{Binding ResetAllCommand}" 
+                                Margin="0,0,0,8" />
+                        
+                        <Button Content="Save as Custom Preset" 
+                                Style="{StaticResource ModernAccentButtonStyle}" />
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
+</UserControl>

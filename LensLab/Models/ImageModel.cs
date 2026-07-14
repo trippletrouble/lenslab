@@ -19,6 +19,11 @@ public class ImageModel
     public BitmapSource? CurrentImage { get; set; }
 
     /// <summary>
+    /// Gets or sets the scaled-down preview version of the image used for fast live UI adjustments.
+    /// </summary>
+    public BitmapSource? PreviewImage { get; set; }
+
+    /// <summary>
     /// Gets or sets the absolute file path of the image.
     /// </summary>
     public string? FilePath { get; set; }

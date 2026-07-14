@@ -76,23 +76,91 @@
             <!-- Left Panel (Filter Gallery View) -->
             <views:FilterGalleryView DataContext="{Binding FilterGallery}" Grid.Column="0" />
 
-            <!-- Middle Panel (Image Editor View Area) -->
+            <!-- Middle Panel (Image Editor View Area & Preset Helper Info) -->
             <Grid Grid.Column="1" Margin="16">
-                <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Image Preview -->
+                <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" Grid.Row="0" Margin="0,0,0,16" />
+
+                <!-- Beginner Preset Info Panel -->
+                <Border Grid.Row="1" 
+                        Background="{StaticResource PanelDarkSlateBrush}" 
+                        BorderBrush="{StaticResource BorderSlateBrush}" 
+                        BorderThickness="1" 
+                        CornerRadius="6" 
+                        Padding="16,12">
+                    <Grid>
+                        <!-- Case 1: A filter is selected -->
+                        <Grid Visibility="{Binding FilterGallery.SelectedFilter, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Name}" 
+                                               Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                               FontWeight="Bold" 
+                                               FontSize="13" />
+                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Manufacturer, StringFormat=' ({0})'}" 
+                                               Foreground="{StaticResource TextMutedGreyBrush}" 
+                                               FontSize="11" 
+                                               VerticalAlignment="Bottom" 
+                                               Margin="0,0,0,1" />
+                                    <Border Background="{StaticResource ControlDarkBrush}" 
+                                            CornerRadius="3" 
+                                            Padding="6,2" 
+                                            Margin="8,0,0,0" 
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Category}" 
+                                                   Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                   FontSize="9" 
+                                                   FontWeight="SemiBold" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Description}" 
+                                           Foreground="{StaticResource TextMutedGreyBrush}" 
+                                           FontSize="11" 
+                                           TextWrapping="Wrap" 
+                                           Margin="0,0,0,6" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="💡 Recommended for: " 
+                                               Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                               FontWeight="SemiBold" 
+                                               FontSize="10" />
+                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.RecommendedFor}" 
+                                               Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                               FontSize="10" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Case 2: No filter selected (Welcome / Helper state) -->
+                        <TextBlock x:Name="WelcomeBlock"
+                                   Text="💡 Beginner Tip: Select a mood preset from the left panel. Use the right-side sliders to fine-tune your look." 
+                                   Foreground="{StaticResource TextMutedGreyBrush}" 
+                                   FontSize="11.5" 
+                                   FontStyle="Italic"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding FilterGallery.SelectedFilter}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
             </Grid>
 
-            <!-- Right Panel (Adjustment Panel Background & Divider) -->
-            <Border Grid.Column="2" 
-                    Background="{StaticResource PanelDarkSlateBrush}" 
-                    BorderBrush="{StaticResource BorderSlateBrush}" 
-                    BorderThickness="1,0,0,0">
-                <Grid Margin="12">
-                    <TextBlock Text="Adjustments" 
-                               Style="{StaticResource TitleTextBlockStyle}" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Top" />
-                </Grid>
-            </Border>
+            <!-- Right Panel (Adjustment Panel View) -->
+            <views:AdjustmentPanel DataContext="{Binding Adjustments}" Grid.Column="2" />
         </Grid>
     </DockPanel>
 </mah:MetroWindow>
