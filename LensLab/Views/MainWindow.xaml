@@ -77,101 +77,240 @@
             <!-- Left Panel (Filter Gallery View) -->
             <views:FilterGalleryView DataContext="{Binding FilterGallery}" Grid.Column="0" />
 
-            <!-- Middle Panel (Image Editor View Area & Preset Helper Info) -->
+            <!-- Middle Panel (Switchable Workspace) -->
             <Grid Grid.Column="1" Margin="16">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                
+                <!-- STATE 1: Start Info Dashboard (Visible when no image is loaded) -->
+                <Grid x:Name="StartPageGrid">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentImage}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
 
-                <!-- Image Preview -->
-                <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" Grid.Row="0" Margin="0,0,0,16" />
+                    <!-- Border Drop Target Area -->
+                    <Border BorderBrush="{StaticResource BorderSlateBrush}" 
+                            BorderThickness="1.5" 
+                            CornerRadius="8"
+                            Background="#151517">
+                        <Grid Margin="24">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="2*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="3*" />
+                            </Grid.RowDefinitions>
 
-                <!-- Preset Info Panel -->
-                <Border Grid.Row="1" 
-                        Background="{StaticResource PanelDarkSlateBrush}" 
-                        BorderBrush="{StaticResource BorderSlateBrush}" 
-                        BorderThickness="1" 
-                        CornerRadius="6" 
-                        Padding="16,12">
-                    <Grid>
-                        <!-- Case 1: A filter is selected -->
-                        <Grid Visibility="{Binding FilterGallery.SelectedFilter, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Name}" 
-                                               Foreground="{StaticResource TextPrimaryWhiteBrush}" 
-                                               FontWeight="Bold" 
-                                               FontSize="13" />
-                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Manufacturer, StringFormat=' ({0})'}" 
-                                               Foreground="{StaticResource TextMutedGreyBrush}" 
-                                               FontSize="11" 
-                                               VerticalAlignment="Bottom" 
-                                               Margin="0,0,0,1" />
-                                    <Border Background="{StaticResource ControlDarkBrush}" 
-                                            CornerRadius="3" 
-                                            Padding="6,2" 
-                                            Margin="8,0,0,0" 
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Category}" 
-                                                   Foreground="{StaticResource AccentVintageAmberBrush}" 
-                                                   FontSize="9" 
-                                                   FontWeight="SemiBold" />
-                                    </Border>
-                                </StackPanel>
-                                <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Description}" 
+                            <!-- Top Header Branding -->
+                            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="CameraIris" 
+                                                            Width="64" 
+                                                            Height="64" 
+                                                            Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                            HorizontalAlignment="Center" 
+                                                            Margin="0,0,0,12" />
+                                <TextBlock Text="LensLab" 
+                                           Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                           FontSize="28" 
+                                           FontWeight="Bold" 
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="ANALOG FILM EMULATION &amp; PHOTO EDITOR" 
+                                           Foreground="{StaticResource TextMutedGreyBrush}" 
+                                           FontSize="10" 
+                                           FontWeight="SemiBold" 
+                                            HorizontalAlignment="Center" 
+                                            Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <!-- Center Upload / Import Button -->
+                            <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Button Command="{Binding OpenImageCommand}" 
+                                        Style="{StaticResource ModernAccentButtonStyle}"
+                                        Padding="20,12"
+                                        HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="FolderOpen" Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Select Photo to Edit" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBlock Text="or drag &amp; drop your image anywhere in this window" 
                                            Foreground="{StaticResource TextMutedGreyBrush}" 
                                            FontSize="11" 
-                                           TextWrapping="Wrap" 
-                                           Margin="0,0,0,6" />
-                                 <StackPanel Orientation="Horizontal">
-                                     <iconPacks:PackIconMaterial Kind="LightbulbOutline" 
-                                                                 Width="12" 
-                                                                 Height="12" 
-                                                                 Foreground="{StaticResource AccentVintageAmberBrush}" 
-                                                                 VerticalAlignment="Center" 
-                                                                 Margin="0,0,6,0" />
-                                     <TextBlock Text="Recommended for: " 
-                                                Foreground="{StaticResource AccentVintageAmberBrush}" 
-                                                FontWeight="SemiBold" 
-                                                FontSize="10.5" 
-                                                VerticalAlignment="Center" />
-                                     <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.RecommendedFor}" 
-                                                Foreground="{StaticResource TextPrimaryWhiteBrush}" 
-                                                FontSize="10.5" 
-                                                VerticalAlignment="Center" />
-                                 </StackPanel>
+                                           FontStyle="Italic"
+                                           HorizontalAlignment="Center" 
+                                           Margin="0,12,0,0" />
+                            </StackPanel>
+
+                            <!-- Bottom Feature Info Cards -->
+                            <Grid Grid.Row="2" VerticalAlignment="Bottom" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Card 1: Presets & Moods -->
+                                <Border Grid.Column="0" 
+                                        Background="{StaticResource ControlDarkBrush}" 
+                                        BorderBrush="{StaticResource BorderSlateBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="16,14">
+                                    <StackPanel>
+                                        <iconPacks:PackIconMaterial Kind="PaletteOutline" Width="20" Height="20" Foreground="{StaticResource AccentVintageAmberBrush}" Margin="0,0,0,8" />
+                                        <TextBlock Text="Presets &amp; Moods" Foreground="{StaticResource TextPrimaryWhiteBrush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                        <TextBlock Text="Emulate vintage film cameras like Fujifilm &amp; Kodak with high-fidelity color curves." 
+                                                   Foreground="{StaticResource TextMutedGreyBrush}" FontSize="10" TextWrapping="Wrap" LineHeight="14" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 2: Precise Tuning -->
+                                <Border Grid.Column="2" 
+                                        Background="{StaticResource ControlDarkBrush}" 
+                                        BorderBrush="{StaticResource BorderSlateBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="16,14">
+                                    <StackPanel>
+                                        <iconPacks:PackIconMaterial Kind="Tune" Width="20" Height="20" Foreground="{StaticResource AccentVintageAmberBrush}" Margin="0,0,0,8" />
+                                        <TextBlock Text="Precise Tuning" Foreground="{StaticResource TextPrimaryWhiteBrush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                        <TextBlock Text="Adjust exposure, temperature, vignette, and film grain using precise slider controls." 
+                                                   Foreground="{StaticResource TextMutedGreyBrush}" FontSize="10" TextWrapping="Wrap" LineHeight="14" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 3: Non-Destructive Export -->
+                                <Border Grid.Column="4" 
+                                        Background="{StaticResource ControlDarkBrush}" 
+                                        BorderBrush="{StaticResource BorderSlateBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="16,14">
+                                    <StackPanel>
+                                        <iconPacks:PackIconMaterial Kind="ContentSaveOutline" Width="20" Height="20" Foreground="{StaticResource AccentVintageAmberBrush}" Margin="0,0,0,8" />
+                                        <TextBlock Text="High-Res Export" Foreground="{StaticResource TextPrimaryWhiteBrush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                        <TextBlock Text="Non-destructive editing workflow. Save and share high-quality JPEG or PNG images." 
+                                                   Foreground="{StaticResource TextMutedGreyBrush}" FontSize="10" TextWrapping="Wrap" LineHeight="14" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- STATE 2: Normal Editor Workspace (Visible when an image is loaded) -->
+                <Grid x:Name="EditorWorkspaceGrid">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentImage}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Image Preview -->
+                    <views:ImageEditorView DataContext="{Binding CurrentImage.CurrentImage}" Grid.Row="0" Margin="0,0,0,16" />
+
+                    <!-- Preset Info Panel -->
+                    <Border Grid.Row="1" 
+                            Background="{StaticResource PanelDarkSlateBrush}" 
+                            BorderBrush="{StaticResource BorderSlateBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="16,12">
+                        <Grid>
+                            <!-- Case 1: A filter is selected -->
+                            <Grid Visibility="{Binding FilterGallery.SelectedFilter, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Name}" 
+                                                   Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                                   FontWeight="Bold" 
+                                                   FontSize="13" />
+                                        <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Manufacturer, StringFormat=' ({0})'}" 
+                                                   Foreground="{StaticResource TextMutedGreyBrush}" 
+                                                   FontSize="11" 
+                                                   VerticalAlignment="Bottom" 
+                                                   Margin="0,0,0,1" />
+                                        <Border Background="{StaticResource ControlDarkBrush}" 
+                                                CornerRadius="3" 
+                                                Padding="6,2" 
+                                                Margin="8,0,0,0" 
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Category}" 
+                                                       Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                       FontSize="9" 
+                                                       FontWeight="SemiBold" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.Description}" 
+                                               Foreground="{StaticResource TextMutedGreyBrush}" 
+                                               FontSize="11" 
+                                               TextWrapping="Wrap" 
+                                               Margin="0,0,0,6" />
+                                     <StackPanel Orientation="Horizontal">
+                                         <iconPacks:PackIconMaterial Kind="LightbulbOutline" 
+                                                                     Width="12" 
+                                                                     Height="12" 
+                                                                     Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                                     VerticalAlignment="Center" 
+                                                                     Margin="0,0,6,0" />
+                                         <TextBlock Text="Recommended for: " 
+                                                    Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                    FontWeight="SemiBold" 
+                                                    FontSize="10.5" 
+                                                    VerticalAlignment="Center" />
+                                         <TextBlock Text="{Binding FilterGallery.SelectedFilter.Filter.RecommendedFor}" 
+                                                    Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                                    FontSize="10.5" 
+                                                    VerticalAlignment="Center" />
+                                     </StackPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Case 2: No filter selected (Welcome / Helper state) -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FilterGallery.SelectedFilter}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <iconPacks:PackIconMaterial Kind="InformationOutline" 
+                                                            Width="14" 
+                                                            Height="14" 
+                                                            Foreground="{StaticResource TextMutedGreyBrush}" 
+                                                            VerticalAlignment="Center" 
+                                                            Margin="0,0,8,0" />
+                                <TextBlock Text="Tip: Select a mood preset from the left panel. Use the right-side sliders to fine-tune your look." 
+                                           Style="{StaticResource BaseTextBlockStyle}"
+                                           Foreground="{StaticResource TextMutedGreyBrush}" 
+                                           FontSize="11.5" 
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
-
-                        <!-- Case 2: No filter selected (Welcome / Helper state) -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding FilterGallery.SelectedFilter}" Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <iconPacks:PackIconMaterial Kind="InformationOutline" 
-                                                        Width="14" 
-                                                        Height="14" 
-                                                        Foreground="{StaticResource TextMutedGreyBrush}" 
-                                                        VerticalAlignment="Center" 
-                                                        Margin="0,0,8,0" />
-                            <TextBlock Text="Tip: Select a mood preset from the left panel. Use the right-side sliders to fine-tune your look." 
-                                       Style="{StaticResource BaseTextBlockStyle}"
-                                       Foreground="{StaticResource TextMutedGreyBrush}" 
-                                       FontSize="11.5" 
-                                       FontStyle="Italic"
-                                       TextWrapping="Wrap"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
             </Grid>
 
             <!-- Right Panel (Adjustment Panel View) -->
