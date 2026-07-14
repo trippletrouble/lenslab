@@ -134,7 +134,11 @@
                                         HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
                                         <iconPacks:PackIconMaterial Kind="FolderOpen" Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                        <TextBlock Text="Select Photo to Edit" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                                        <TextBlock Text="Select Photo to Edit" 
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                   FontSize="13" 
+                                                   FontWeight="Bold" 
+                                                   VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                                 <TextBlock Text="or drag &amp; drop your image anywhere in this window" 
