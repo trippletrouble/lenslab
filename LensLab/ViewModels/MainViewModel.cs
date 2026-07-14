@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -18,6 +19,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly IFileDialogService _fileDialogService;
     private readonly FilterLoaderService _filterLoaderService;
+    private readonly ImageProcessingService _imageProcessingService;
 
     [ObservableProperty]
     private string _statusText = "Ready";
@@ -32,12 +34,21 @@ public partial class MainViewModel : ObservableObject
     private List<FilterPreset> _filters = new();
 
     /// <summary>
+    /// Gets the ViewModel for the filter gallery.
+    /// </summary>
+    public FilterGalleryViewModel FilterGallery { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     public MainViewModel()
     {
         _fileDialogService = new FileDialogService();
         _filterLoaderService = new FilterLoaderService();
+        _imageProcessingService = new ImageProcessingService();
+        
+        FilterGallery = new FilterGalleryViewModel();
+        FilterGallery.FilterSelected += OnFilterSelected;
     }
 
     /// <summary>
@@ -64,6 +75,43 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Handler that executes whenever a filter selection changes in the gallery.
+    /// Applies the selected filter to the original image and updates the viewport.
+    /// </summary>
+    private async void OnFilterSelected(object? sender, FilterPreset? filter)
+    {
+        if (CurrentImage == null || CurrentImage.OriginalImage == null) return;
+
+        try
+        {
+            IsBusy = true;
+            StatusText = filter != null ? $"Applying {filter.Name}..." : "Removing filter...";
+
+            // Apply filter in background thread
+            var processedImage = await _imageProcessingService.ApplyEditAsync(
+                CurrentImage.OriginalImage,
+                new AdjustmentSettings(), // slider settings are empty for now
+                filter,
+                CancellationToken.None);
+
+            CurrentImage.CurrentImage = processedImage;
+            
+            // Raise property changed to notify the UI to refresh its Image source binding
+            OnPropertyChanged(nameof(CurrentImage));
+            
+            StatusText = filter != null ? $"{filter.Name} applied" : "Filter removed";
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Error applying filter";
+            System.Diagnostics.Debug.WriteLine($"Error applying filter: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     /// <summary>
     /// Asynchronously opens an image file. If no filePath is provided, shows the file dialog.
@@ -111,6 +159,9 @@ public partial class MainViewModel : ObservableObject
             };
 
             StatusText = CurrentImage.FileName ?? "Image loaded";
+
+            // Trigger thumbnail previews generation in parallel
+            await FilterGallery.LoadFiltersAsync(loadedBitmap);
         }
         catch (Exception ex)
         {

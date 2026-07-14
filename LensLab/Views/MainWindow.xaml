@@ -73,18 +73,8 @@
                 <ColumnDefinition Width="280" />
             </Grid.ColumnDefinitions>
 
-            <!-- Left Panel (Filter Gallery Background & Divider) -->
-            <Border Grid.Column="0" 
-                    Background="{StaticResource PanelDarkSlateBrush}" 
-                    BorderBrush="{StaticResource BorderSlateBrush}" 
-                    BorderThickness="0,0,1,0">
-                <Grid Margin="12">
-                    <TextBlock Text="Filter Presets" 
-                               Style="{StaticResource TitleTextBlockStyle}" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Top" />
-                </Grid>
-            </Border>
+            <!-- Left Panel (Filter Gallery View) -->
+            <views:FilterGalleryView DataContext="{Binding FilterGallery}" Grid.Column="0" />
 
             <!-- Middle Panel (Image Editor View Area) -->
             <Grid Grid.Column="1" Margin="16">
