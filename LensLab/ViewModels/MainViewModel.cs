@@ -99,8 +99,6 @@ public partial class MainViewModel : ObservableObject
             _renderCts = new CancellationTokenSource();
             var token = _renderCts.Token;
 
-            // Debounce delay to prevent GC and calculation spam during continuous sliding
-            await Task.Delay(20, token);
 
             // Get selected filter from gallery
             var filter = FilterGallery.SelectedFilter?.Filter;

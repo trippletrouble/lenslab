@@ -29,7 +29,7 @@
                                           RecognizesAccessKey="***ENTFERNT***">
                             <ContentPresenter.Resources>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                 </Style>
                             </ContentPresenter.Resources>
                         </ContentPresenter>
@@ -88,7 +88,7 @@
                                           RecognizesAccessKey="***ENTFERNT***">
                             <ContentPresenter.Resources>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                 </Style>
                             </ContentPresenter.Resources>
                         </ContentPresenter>

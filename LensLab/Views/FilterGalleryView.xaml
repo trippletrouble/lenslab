@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:converters="clr-namespace:LensLab.Converters"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="220">
 
@@ -112,11 +113,20 @@
                                            Margin="0,1,0,4" />
 
                                 <!-- Recommended For Tags -->
-                                <TextBlock Text="{Binding Filter.RecommendedFor, StringFormat='📷 {0}'}" 
-                                           Style="{StaticResource BaseTextBlockStyle}" 
-                                           Foreground="{StaticResource AccentVintageAmberBrush}" 
-                                           FontSize="9" 
-                                           FontStyle="Italic" />
+                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                    <iconPacks:PackIconMaterial Kind="Camera" 
+                                                                Width="10" 
+                                                                Height="10" 
+                                                                Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                                                VerticalAlignment="Center" 
+                                                                Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Filter.RecommendedFor}" 
+                                               Style="{StaticResource BaseTextBlockStyle}" 
+                                               Foreground="{StaticResource AccentVintageAmberBrush}" 
+                                               FontSize="9" 
+                                               FontStyle="Italic" 
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                         <DataTemplate.Triggers>

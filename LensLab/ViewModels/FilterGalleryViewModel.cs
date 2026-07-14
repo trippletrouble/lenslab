@@ -116,6 +116,38 @@ public partial class FilterGalleryViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Selects the next filter in the gallery list.
+    /// </summary>
+    public void SelectNextFilter()
+    {
+        if (Filters == null || Filters.Count == 0) return;
+        
+        int index = SelectedFilter != null ? Filters.IndexOf(SelectedFilter) : -1;
+        if (index < Filters.Count - 1)
+        {
+            SelectedFilter = Filters[index + 1];
+        }
+    }
+
+    /// <summary>
+    /// Selects the previous filter in the gallery list.
+    /// </summary>
+    public void SelectPreviousFilter()
+    {
+        if (Filters == null || Filters.Count == 0) return;
+        
+        int index = SelectedFilter != null ? Filters.IndexOf(SelectedFilter) : -1;
+        if (index > 0)
+        {
+            SelectedFilter = Filters[index - 1];
+        }
+        else if (index == -1 && Filters.Count > 0)
+        {
+            SelectedFilter = Filters[0];
+        }
+    }
+
     partial void OnSelectedFilterChanged(FilterPreviewItem? oldValue, FilterPreviewItem? newValue)
     {
         // Adjust the IsSelected states in the previews

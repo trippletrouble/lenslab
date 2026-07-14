@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="280">
     
@@ -54,11 +55,39 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Strength" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding FilterOpacity, StringFormat={}{0:0}%}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="0" Maximum="100" 
-                                Value="{Binding FilterOpacity, Mode=TwoWay}" 
-                                Tag="100" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <!-- Slider Grid with Chevrons -->
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=StrengthSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="StrengthSlider"
+                                    Minimum="0" Maximum="100" 
+                                    SmallChange="5" LargeChange="10"
+                                    Value="{Binding FilterOpacity, Mode=TwoWay}" 
+                                    Tag="100" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=StrengthSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
                     <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
@@ -66,6 +95,7 @@
                     <!-- Section: Exposure -->
                     <TextBlock Text="Exposure &amp; Contrast" Style="{StaticResource SectionHeaderStyle}" />
                     
+                    <!-- Brightness Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -77,13 +107,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Brightness" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Brightness, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Brightness, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=BrightnessSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="BrightnessSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Brightness, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=BrightnessSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Contrast Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -95,11 +153,38 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Contrast" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Contrast, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Contrast, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=ContrastSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="ContrastSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Contrast, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=ContrastSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
                     <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
@@ -107,6 +192,7 @@
                     <!-- Section: Color -->
                     <TextBlock Text="Color Balance" Style="{StaticResource SectionHeaderStyle}" />
 
+                    <!-- Saturation Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -118,13 +204,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Saturation" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Saturation, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Saturation, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=SaturationSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="SaturationSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Saturation, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=SaturationSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Temperature Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -136,13 +250,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Temperature" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Temperature, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Temperature, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=TemperatureSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="TemperatureSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Temperature, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=TemperatureSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Tint Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -154,11 +296,38 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Tint" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Tint, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Tint, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=TintSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="TintSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Tint, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=TintSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
                     <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
@@ -166,6 +335,7 @@
                     <!-- Section: Tone Details -->
                     <TextBlock Text="Light &amp; Shadow Detail" Style="{StaticResource SectionHeaderStyle}" />
 
+                    <!-- Highlights Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -177,13 +347,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Highlights" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Highlights, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Highlights, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=HighlightsSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="HighlightsSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Highlights, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=HighlightsSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Shadows Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -195,11 +393,38 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Shadows" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Shadows, StringFormat={}{0:+0;-0;0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="-100" Maximum="100" 
-                                Value="{Binding Settings.Shadows, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=ShadowsSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="ShadowsSlider"
+                                    Minimum="-100" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Shadows, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=ShadowsSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
                     <Border BorderBrush="{StaticResource BorderSlateBrush}" BorderThickness="0,0,0,1" Margin="0,4,0,4" />
@@ -207,6 +432,7 @@
                     <!-- Section: Effects -->
                     <TextBlock Text="Analog Effects" Style="{StaticResource SectionHeaderStyle}" />
 
+                    <!-- Vignette Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -218,13 +444,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Vignette" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Vignette, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="0" Maximum="100" 
-                                Value="{Binding Settings.Vignette, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=VignetteSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="VignetteSlider"
+                                    Minimum="0" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Vignette, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=VignetteSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Grain Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -236,13 +490,41 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Grain" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Grain, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="0" Maximum="100" 
-                                Value="{Binding Settings.Grain, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=GrainSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="GrainSlider"
+                                    Minimum="0" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Grain, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=GrainSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
+                    <!-- Fade Slider -->
                     <Grid Margin="0,0,0,12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -254,11 +536,38 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Fade (Matte)" Style="{StaticResource SliderLabelStyle}" />
                         <TextBlock Grid.Column="1" Text="{Binding Settings.Fade, StringFormat={}{0:0}}" Style="{StaticResource SliderValueStyle}" />
-                        <Slider Grid.Row="1" Grid.ColumnSpan="2" 
-                                Minimum="0" Maximum="100" 
-                                Value="{Binding Settings.Fade, Mode=TwoWay}" 
-                                Tag="0" 
-                                PreviewMouseDoubleClick="Slider_MouseDoubleClick" />
+                        
+                        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" 
+                                    Command="Slider.DecreaseSmall" 
+                                    CommandTarget="{Binding ElementName=FadeSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="0,0,4,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="10" Height="10" />
+                            </Button>
+                            <Slider Grid.Column="1" 
+                                    x:Name="FadeSlider"
+                                    Minimum="0" Maximum="100" 
+                                    SmallChange="1" LargeChange="5"
+                                    Value="{Binding Settings.Fade, Mode=TwoWay}" 
+                                    Tag="0" 
+                                    PreviewMouseDoubleClick="Slider_MouseDoubleClick"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="2" 
+                                    Command="Slider.IncreaseSmall" 
+                                    CommandTarget="{Binding ElementName=FadeSlider}" 
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    Padding="4,2" MinWidth="20" MinHeight="20" Margin="4,0,0,0"
+                                    VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="ChevronRight" Width="10" Height="10" />
+                            </Button>
+                        </Grid>
                     </Grid>
 
                     <!-- Reset & Save Buttons -->

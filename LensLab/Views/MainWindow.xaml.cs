@@ -38,4 +38,29 @@ public partial class MainWindow : MetroWindow
             }
         }
     }
+
+    /// <summary>
+    /// Invoked when a key is pressed. Handles Up/Down arrow navigation for film presets.
+    /// </summary>
+    protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+    {
+        base.OnPreviewKeyDown(e);
+
+        if (e.Key == System.Windows.Input.Key.Up)
+        {
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.FilterGallery.SelectPreviousFilter();
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == System.Windows.Input.Key.Down)
+        {
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.FilterGallery.SelectNextFilter();
+                e.Handled = true;
+            }
+        }
+    }
 }

@@ -164,7 +164,7 @@ public class FilterPreset
     [JsonPropertyName("LuminanceMagenta")]
     public double LuminanceMagenta { get; set; } = 0.0;
 
-    // Beginner Metadata
+    // Preset Metadata
     [JsonPropertyName("Category")]
     public string Category { get; set; } = "General";
 
