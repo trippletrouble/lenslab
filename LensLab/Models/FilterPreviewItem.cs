@@ -23,6 +23,11 @@ public partial class FilterPreviewItem : ObservableObject
     private bool _isSelected;
 
     /// <summary>
+    /// Gets a value indicating whether this is a custom preset created by the user.
+    /// </summary>
+    public bool IsCustom => Filter.Manufacturer != null && Filter.Manufacturer.Equals("User", System.StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FilterPreviewItem"/> class.
     /// </summary>
     /// <param name="filter">The filter preset.</param>

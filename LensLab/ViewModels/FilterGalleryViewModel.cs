@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LensLab.Models;
 using LensLab.Services;
 
@@ -145,6 +146,41 @@ public partial class FilterGalleryViewModel : ObservableObject
         else if (index == -1 && Filters.Count > 0)
         {
             SelectedFilter = Filters[0];
+        }
+    }
+
+    /// <summary>
+    /// Command to delete a custom filter preset.
+    /// </summary>
+    [RelayCommand]
+    private void DeletePreset(FilterPreviewItem item)
+    {
+        if (item == null || !item.IsCustom) return;
+
+        try
+        {
+            // Sanitize file name
+            string sanitizedName = string.Join("_", item.Filter.Name.Split(System.IO.Path.GetInvalidFileNameChars()));
+            string customDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
+            string filePath = System.IO.Path.Combine(customDir, sanitizedName + ".json");
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            // Remove from collection
+            Filters.Remove(item);
+
+            // If it was selected, clear selection
+            if (SelectedFilter == item)
+            {
+                SelectedFilter = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error deleting preset: {ex.Message}");
         }
     }
 

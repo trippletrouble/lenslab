@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using LensLab.ViewModels;
 
 namespace LensLab.Views
 {
@@ -29,6 +30,8 @@ namespace LensLab.Views
                 }
             }
         }
+
+
 
     }
 }

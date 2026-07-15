@@ -25,18 +25,58 @@ public class FilterLoaderService
         {
             var presets = new List<FilterPreset>();
 
-            // Construct directory path relative to the app base directory
             string filtersDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Filters");
+            string customDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
 
-            if (!Directory.Exists(filtersDir))
+            // Ensure custom presets folder exists
+            try
+            {
+                if (!Directory.Exists(customDir))
+                {
+                    Directory.CreateDirectory(customDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to create custom presets directory: {ex.Message}");
+            }
+
+            var files = new List<string>();
+            if (Directory.Exists(filtersDir))
+            {
+                try
+                {
+                    files.AddRange(Directory.GetFiles(filtersDir, "*.json"));
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error scanning filters directory: {ex.Message}");
+                }
+            }
+            else
             {
                 Debug.WriteLine($"Filters directory not found at: {filtersDir}");
+            }
+
+            if (Directory.Exists(customDir))
+            {
+                try
+                {
+                    files.AddRange(Directory.GetFiles(customDir, "*.json"));
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error scanning custom presets directory: {ex.Message}");
+                }
+            }
+
+            if (files.Count == 0)
+            {
                 return presets;
             }
 
             try
             {
-                var files = Directory.GetFiles(filtersDir, "*.json");
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -62,7 +102,7 @@ public class FilterLoaderService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error scanning filters directory: {ex.Message}");
+                Debug.WriteLine($"Error scanning files: {ex.Message}");
             }
 
             // Sort presets first by Manufacturer, then by Name

@@ -319,6 +319,71 @@
 
             <!-- Right Panel (Adjustment Panel View) -->
             <views:AdjustmentPanel DataContext="{Binding Adjustments}" Grid.Column="2" />
+
+            <!-- Custom Styled Save Preset Dialog Popup Overlay -->
+            <Grid Grid.ColumnSpan="3"
+                  Panel.ZIndex="100"
+                  Background="#B0121212"
+                  Visibility="{Binding IsSavePresetDialogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                
+                <Border Width="380"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource PanelDarkSlateBrush}"
+                        BorderBrush="{StaticResource BorderSlateBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24">
+                    <StackPanel>
+                        <!-- Title -->
+                        <TextBlock Text="Save Custom Preset"
+                                   Foreground="{StaticResource TextPrimaryWhiteBrush}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,8" />
+                        
+                        <!-- Description -->
+                        <TextBlock Text="Enter a name for your custom film emulation preset:"
+                                   Foreground="{StaticResource TextMutedGreyBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16" />
+                        
+                        <!-- Input TextBox -->
+                        <TextBox Text="{Binding NewPresetName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                 Background="{StaticResource ControlDarkBrush}"
+                                 Foreground="{StaticResource TextPrimaryWhiteBrush}"
+                                 BorderBrush="{StaticResource BorderSlateBrush}"
+                                 Padding="8,6"
+                                 FontSize="12"
+                                 CaretBrush="{StaticResource AccentVintageAmberBrush}"
+                                 Margin="0,0,0,24" />
+                        
+                        <!-- Buttons Row -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Save Button (Accent style: Amber background, black text) -->
+                            <Button Grid.Column="0"
+                                    Content="Save"
+                                    Command="{Binding SavePresetDialogConfirmCommand}"
+                                    Style="{StaticResource ModernAccentButtonStyle}"
+                                    IsDefault="True" />
+                            
+                            <!-- Cancel Button (Flat style: Dark background, white text) -->
+                            <Button Grid.Column="2"
+                                    Content="Cancel"
+                                    Command="{Binding SavePresetDialogCancelCommand}"
+                                    Style="{StaticResource ModernFlatButtonStyle}"
+                                    IsCancel="True" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </DockPanel>
 </mah:MetroWindow>

@@ -98,19 +98,40 @@
                                     <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
                                 </Border>
                                 
-                                <!-- Filter Name -->
-                                <TextBlock Text="{Binding Filter.Name}" 
-                                           Style="{StaticResource BaseTextBlockStyle}" 
-                                           Foreground="{StaticResource TextPrimaryWhiteBrush}" 
-                                           FontWeight="SemiBold" 
-                                           FontSize="12" />
-                                
-                                <!-- Manufacturer Subtitle -->
-                                <TextBlock Text="{Binding Filter.Manufacturer, StringFormat='by {0}'}" 
-                                           Style="{StaticResource BaseTextBlockStyle}" 
-                                           Foreground="{StaticResource TextMutedGreyBrush}" 
-                                           FontSize="10" 
-                                           Margin="0,1,0,4" />
+                                <!-- Filter Name & Delete Button Row -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <!-- Filter Name -->
+                                        <TextBlock Text="{Binding Filter.Name}" 
+                                                   Style="{StaticResource BaseTextBlockStyle}" 
+                                                   Foreground="{StaticResource TextPrimaryWhiteBrush}" 
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="12" />
+                                        
+                                        <!-- Manufacturer Subtitle -->
+                                        <TextBlock Text="{Binding Filter.Manufacturer, StringFormat='by {0}'}" 
+                                                   Style="{StaticResource BaseTextBlockStyle}" 
+                                                   Foreground="{StaticResource TextMutedGreyBrush}" 
+                                                   FontSize="10" 
+                                                   Margin="0,1,0,4" />
+                                    </StackPanel>
+                                    
+                                    <!-- Delete Button (Visible only for custom presets) -->
+                                    <Button Grid.Column="1"
+                                            Click="DeletePreset_Click"
+                                            Style="{StaticResource ModernFlatButtonStyle}"
+                                            Padding="4,2" MinWidth="22" MinHeight="22" Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding IsCustom, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            ToolTip="Delete Custom Preset">
+                                        <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="12" Height="12" Foreground="Red" />
+                                    </Button>
+                                </Grid>
 
                                 <!-- Recommended For Tags -->
                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">

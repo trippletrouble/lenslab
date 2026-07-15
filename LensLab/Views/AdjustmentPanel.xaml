@@ -577,6 +577,7 @@
                                 Margin="0,0,0,8" />
                         
                         <Button Content="Save as Custom Preset" 
+                                Command="{Binding DataContext.ShowSavePresetDialogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Style="{StaticResource ModernAccentButtonStyle}" />
                     </StackPanel>
 
