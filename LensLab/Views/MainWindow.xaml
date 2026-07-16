@@ -153,6 +153,43 @@
                                            FontStyle="Italic"
                                            HorizontalAlignment="Center" 
                                            Margin="0,12,0,0" />
+
+                                <!-- Recent Files List -->
+                                <StackPanel Margin="0,32,0,0" Visibility="{Binding RecentFiles.Count, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Text="Zuletzt geöffnete Bilder"
+                                               Foreground="{StaticResource AccentVintageAmberBrush}"
+                                               FontWeight="SemiBold"
+                                               FontSize="11"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,10" />
+                                    
+                                    <ItemsControl ItemsSource="{Binding RecentFiles}" HorizontalAlignment="Center">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Command="{Binding DataContext.OpenRecentFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource ModernFlatButtonStyle}"
+                                                        Margin="0,0,0,6"
+                                                        Padding="10,5"
+                                                        MinWidth="260">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <iconPacks:PackIconMaterial Kind="FileImageOutline" Width="12" Height="12" Margin="0,0,8,0" Foreground="{StaticResource TextMutedGreyBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="1" 
+                                                                   Text="{Binding FileName}" 
+                                                                   TextTrimming="CharacterEllipsis" 
+                                                                   Foreground="{StaticResource TextPrimaryWhiteBrush}"
+                                                                   FontSize="11" 
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
 
                             <!-- Bottom Feature Info Cards -->

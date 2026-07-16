@@ -6,10 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LensLab.Models;
 using LensLab.Services;
+using Microsoft.EntityFrameworkCore;
+using LensLab.Data;
+using LensLab.Data.Entities;
 
 namespace LensLab.ViewModels;
 
@@ -36,6 +40,11 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private List<FilterPreset> _filters = new();
+
+    /// <summary>
+    /// Gets the list of recently opened files.
+    /// </summary>
+    public ObservableCollection<RecentFile> RecentFiles { get; } = new();
 
     /// <summary>
     /// Gets a value indicating whether a photo is currently loaded in the editor.
@@ -72,6 +81,9 @@ public partial class MainViewModel : ObservableObject
  
         Adjustments = new AdjustmentViewModel();
         Adjustments.AdjustmentChanged += OnAdjustmentChanged;
+
+        // Initialize and load recent files from SQLite database
+        _ = LoadRecentFilesAsync();
     }
 
     /// <summary>
@@ -243,6 +255,9 @@ public partial class MainViewModel : ObservableObject
             };
 
             StatusText = CurrentImage.FileName ?? "Image loaded";
+
+            // Log to recent files database
+            _ = AddRecentFileAsync(filePath);
 
             // Trigger thumbnail previews generation in parallel
             await FilterGallery.LoadFiltersAsync(loadedBitmap);
@@ -488,5 +503,100 @@ public partial class MainViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Asynchronously initializes the database schema if needed and loads the top 5 recent files.
+    /// </summary>
+    public async Task LoadRecentFilesAsync()
+    {
+        try
+        {
+            using var db = new LensLabDbContext();
+            // Automatically create database and tables if they don't exist
+            await db.Database.EnsureCreatedAsync();
+
+            var list = await db.RecentFiles
+                .OrderByDescending(f => f.LastOpened)
+                .Take(5)
+                .ToListAsync();
+
+            RecentFiles.Clear();
+            foreach (var item in list)
+            {
+                RecentFiles.Add(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading recent files: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Adds a file path to the recent files database or updates its last opened timestamp.
+    /// prunes older items to keep only 5.
+    /// </summary>
+    private async Task AddRecentFileAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath)) return;
+
+        try
+        {
+            using var db = new LensLabDbContext();
+            var existing = await db.RecentFiles.FirstOrDefaultAsync(f => f.FilePath == filePath);
+            if (existing != null)
+            {
+                existing.LastOpened = DateTime.Now;
+                db.RecentFiles.Update(existing);
+            }
+            else
+            {
+                var recent = new RecentFile
+                {
+                    FilePath = filePath,
+                    FileName = Path.GetFileName(filePath),
+                    LastOpened = DateTime.Now
+                };
+                await db.RecentFiles.AddAsync(recent);
+            }
+
+            await db.SaveChangesAsync();
+
+            // Keep only top 5, delete older ones
+            var all = await db.RecentFiles.OrderByDescending(f => f.LastOpened).ToListAsync();
+            if (all.Count > 5)
+            {
+                for (int i = 5; i < all.Count; i++)
+                {
+                    db.RecentFiles.Remove(all[i]);
+                }
+                await db.SaveChangesAsync();
+            }
+
+            // Refresh collection
+            await LoadRecentFilesAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error adding recent file: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Command to open a recent file clicked from the dashboard.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenRecentFileAsync(RecentFile file)
+    {
+        if (file == null) return;
+        
+        if (!File.Exists(file.FilePath))
+        {
+            System.Windows.MessageBox.Show("Die Datei existiert nicht mehr an diesem Ort.", "Fehler beim Öffnen", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            return;
+        }
+
+        await OpenImageAsync(file.FilePath);
     }
 }
