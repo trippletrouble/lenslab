@@ -40,6 +40,27 @@
                        Style="{StaticResource TitleTextBlockStyle}" 
                        Margin="0,0,0,12" />
 
+            <!-- Preset Sharing Actions -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                
+                <Button Content="Import Preset"
+                        Command="{Binding ImportPresetCommand}"
+                        Padding="6,4"
+                        FontSize="11" />
+                        
+                <Button Grid.Column="2" 
+                        Content="Export Preset"
+                        Command="{Binding ExportPresetCommand}"
+                        IsEnabled="{Binding SelectedFilter.IsCustom, FallbackValue=False}"
+                        Padding="6,4"
+                        FontSize="11" />
+            </Grid>
+
             <ListBox ItemsSource="{Binding Source={StaticResource GroupedFilters}}"
                      SelectedItem="{Binding SelectedFilter}"
                      Background="Transparent"

@@ -42,6 +42,12 @@
                 <Button Content="Open Image" 
                         Command="{Binding OpenImageCommand}"
                         Padding="16,6" />
+                <Button Content="Export Image" 
+                        Command="{Binding ExportImageCommand}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Style="{StaticResource ModernAccentButtonStyle}"
+                        Padding="16,6"
+                        Margin="8,0,0,0" />
             </StackPanel>
         </Border>
 

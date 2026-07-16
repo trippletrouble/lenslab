@@ -31,10 +31,16 @@ public partial class MainViewModel : ObservableObject
     private bool _isBusy = false;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsImageLoaded))]
     private ImageModel? _currentImage;
 
     [ObservableProperty]
     private List<FilterPreset> _filters = new();
+
+    /// <summary>
+    /// Gets a value indicating whether a photo is currently loaded in the editor.
+    /// </summary>
+    public bool IsImageLoaded => CurrentImage != null;
 
     [ObservableProperty]
     private bool _isSavePresetDialogVisible = false;
@@ -409,6 +415,74 @@ public partial class MainViewModel : ObservableObject
         {
             StatusText = "Error saving custom preset";
             System.Diagnostics.Debug.WriteLine($"Error saving preset: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously exports the currently active image at full original resolution,
+    /// applying the selected filter preset and manual slider settings, then saving to JPG or PNG.
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportImageAsync()
+    {
+        if (CurrentImage == null || CurrentImage.OriginalImage == null) return;
+
+        try
+        {
+            // Open SaveFileDialog to choose filename and format
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "JPEG Image (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG Image (*.png)|*.png",
+                Title = "Export Edited Image",
+                FileName = Path.GetFileNameWithoutExtension(CurrentImage.FileName) + "_edited"
+            };
+
+            if (saveFileDialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            StatusText = "Exporting image in full resolution...";
+
+            string filePath = saveFileDialog.FileName;
+            string ext = Path.GetExtension(filePath).ToLower();
+
+            // Gather active filter and manual adjustments
+            var filter = FilterGallery.SelectedFilter?.Filter;
+            double opacity = Adjustments.FilterOpacity;
+            var settings = Adjustments.Settings;
+
+            // Render off-thread at full resolution
+            BitmapSource processedBitmap = await Task.Run(async () =>
+            {
+                return await _imageProcessingService.ApplyEditAsync(
+                    CurrentImage.OriginalImage,
+                    settings,
+                    filter,
+                    opacity,
+                    CancellationToken.None);
+            });
+
+            // Save file to disk off-thread
+            await Task.Run(() =>
+            {
+                using var fileStream = new FileStream(filePath, FileMode.Create);
+                BitmapEncoder encoder = (ext == ".png") ? (BitmapEncoder)new PngBitmapEncoder() : new JpegBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(processedBitmap));
+                encoder.Save(fileStream);
+            });
+
+            StatusText = "Image exported successfully!";
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Error exporting image";
+            System.Diagnostics.Debug.WriteLine($"Error exporting image: {ex.Message}");
         }
         finally
         {

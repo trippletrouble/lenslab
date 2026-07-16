@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -10,6 +12,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LensLab.Models;
 using LensLab.Services;
+using Microsoft.Win32;
 
 namespace LensLab.ViewModels;
 
@@ -20,6 +23,7 @@ public partial class FilterGalleryViewModel : ObservableObject
 {
     private readonly FilterLoaderService _filterLoaderService;
     private readonly ImageProcessingService _imageProcessingService;
+    private BitmapSource? _originalImageSource;
 
     [ObservableProperty]
     private ObservableCollection<FilterPreviewItem> _filters = new();
@@ -53,6 +57,7 @@ public partial class FilterGalleryViewModel : ObservableObject
     public async Task LoadFiltersAsync(BitmapSource sourceImage)
     {
         if (sourceImage == null) return;
+        _originalImageSource = sourceImage;
 
         try
         {
@@ -181,6 +186,108 @@ public partial class FilterGalleryViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error deleting preset: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Command to export the currently selected custom filter preset as a JSON file.
+    /// </summary>
+    [RelayCommand]
+    private void ExportPreset()
+    {
+        if (SelectedFilter == null || !SelectedFilter.IsCustom) return;
+
+        try
+        {
+            // Sanitize file name for default dialog name
+            string sanitizedName = string.Join("_", SelectedFilter.Filter.Name.Split(Path.GetInvalidFileNameChars()));
+
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "JSON Preset File (*.json)|*.json",
+                Title = "Export Preset File",
+                FileName = sanitizedName
+            };
+
+            if (saveFileDialog.ShowDialog() != true) return;
+
+            string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets", sanitizedName + ".json");
+
+            if (File.Exists(sourcePath))
+            {
+                File.Copy(sourcePath, saveFileDialog.FileName, overwrite: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error exporting preset: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Command to import a custom preset JSON file, validate it, and copy it to the local app presets directory.
+    /// </summary>
+    [RelayCommand]
+    private async Task ImportPresetAsync()
+    {
+        try
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "JSON Preset File (*.json)|*.json",
+                Title = "Import Custom Preset"
+            };
+
+            if (openFileDialog.ShowDialog() != true) return;
+
+            string sourcePath = openFileDialog.FileName;
+            string jsonContent = await File.ReadAllTextAsync(sourcePath);
+
+            // Validate format by trying to deserialize
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var preset = JsonSerializer.Deserialize<FilterPreset>(jsonContent, options);
+
+            if (preset == null || string.IsNullOrWhiteSpace(preset.Name))
+            {
+                System.Windows.MessageBox.Show("Invalid preset file format. The preset must contain a valid Name.", "Import Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                return;
+            }
+
+            // Standardize fields to force User categorization
+            preset.Manufacturer = "User";
+            preset.Category = "User";
+            if (string.IsNullOrWhiteSpace(preset.RecommendedFor))
+            {
+                preset.RecommendedFor = "Custom";
+            }
+
+            // Save to local custom directory
+            string customDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
+            if (!Directory.Exists(customDir))
+            {
+                Directory.CreateDirectory(customDir);
+            }
+
+            string destFileName = string.Join("_", preset.Name.Split(Path.GetInvalidFileNameChars())) + ".json";
+            string destPath = Path.Combine(customDir, destFileName);
+
+            var writeOptions = new JsonSerializerOptions { WriteIndented = true };
+            string formattedJson = JsonSerializer.Serialize(preset, writeOptions);
+            await File.WriteAllTextAsync(destPath, formattedJson);
+
+            // Reload gallery previews if we have a loaded original image reference
+            if (_originalImageSource != null)
+            {
+                await LoadFiltersAsync(_originalImageSource);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show($"Preset '{preset.Name}' imported successfully. It will be visible once an image is loaded.", "Import Successful", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error importing preset: {ex.Message}", "Import Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
 
