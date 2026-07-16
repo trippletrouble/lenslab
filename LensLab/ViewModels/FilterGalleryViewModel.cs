@@ -34,6 +34,12 @@ public partial class FilterGalleryViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
+    [ObservableProperty]
+    private bool _isDeleteConfirmDialogVisible;
+
+    [ObservableProperty]
+    private FilterPreviewItem? _presetToDelete;
+
     /// <summary>
     /// Event triggered when a filter preset is selected.
     /// Passes the selected preset (or null if deselected).
@@ -187,6 +193,41 @@ public partial class FilterGalleryViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine($"Error deleting preset: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Shows the deletion confirmation overlay for the specified preset.
+    /// </summary>
+    [RelayCommand]
+    private void ShowDeleteConfirm(FilterPreviewItem item)
+    {
+        if (item == null) return;
+        PresetToDelete = item;
+        IsDeleteConfirmDialogVisible = true;
+    }
+
+    /// <summary>
+    /// Confirms the deletion of the preset, executes the delete command, and closes the overlay.
+    /// </summary>
+    [RelayCommand]
+    private void ConfirmDelete()
+    {
+        if (PresetToDelete != null)
+        {
+            DeletePreset(PresetToDelete);
+            PresetToDelete = null;
+        }
+        IsDeleteConfirmDialogVisible = false;
+    }
+
+    /// <summary>
+    /// Cancels the deletion and closes the overlay.
+    /// </summary>
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        PresetToDelete = null;
+        IsDeleteConfirmDialogVisible = false;
     }
 
     /// <summary>

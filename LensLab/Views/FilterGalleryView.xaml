@@ -144,7 +144,8 @@
                                     
                                     <!-- Delete Button (Visible only for custom presets) -->
                                     <Button Grid.Column="1"
-                                            Click="DeletePreset_Click"
+                                            Command="{Binding DataContext.ShowDeleteConfirmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
                                             Style="{StaticResource ModernFlatButtonStyle}"
                                             Padding="4,2" MinWidth="22" MinHeight="22" Margin="4,0,0,0"
                                             VerticalAlignment="Center"

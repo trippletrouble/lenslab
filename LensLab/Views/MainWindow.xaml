@@ -427,6 +427,61 @@
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <!-- Custom Styled Delete Preset Dialog Popup Overlay -->
+            <Grid Grid.ColumnSpan="3"
+                  Panel.ZIndex="100"
+                  Background="#B0121212"
+                  Visibility="{Binding FilterGallery.IsDeleteConfirmDialogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                
+                <Border Width="380"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource PanelDarkSlateBrush}"
+                        BorderBrush="{StaticResource BorderSlateBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="24">
+                    <StackPanel>
+                        <!-- Title -->
+                        <TextBlock Text="Delete Custom Preset"
+                                   Foreground="{StaticResource TextPrimaryWhiteBrush}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,8" />
+                        
+                        <!-- Description -->
+                        <TextBlock Text="{Binding FilterGallery.PresetToDelete.Filter.Name, StringFormat='Are you sure you want to permanently delete the custom preset \'{0}\'?'}"
+                                   Foreground="{StaticResource TextMutedGreyBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,24" />
+                        
+                        <!-- Buttons Row -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Delete Button (Flat style: Dark background, white text) -->
+                            <Button Grid.Column="0"
+                                    Content="Delete"
+                                    Command="{Binding FilterGallery.ConfirmDeleteCommand}"
+                                    Style="{StaticResource ModernFlatButtonStyle}" />
+                            
+                            <!-- Cancel Button (Accent style: Amber background, black text) -->
+                            <Button Grid.Column="2"
+                                    Content="Cancel"
+                                    Command="{Binding FilterGallery.CancelDeleteCommand}"
+                                    Style="{StaticResource ModernAccentButtonStyle}"
+                                    IsCancel="True"
+                                    IsDefault="True" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </DockPanel>
 </mah:MetroWindow>
