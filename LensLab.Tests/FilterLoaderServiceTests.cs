@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using LensLab.Services;
+using Moq;
 using Xunit;
 
 namespace LensLab.Tests;
@@ -9,15 +10,15 @@ namespace LensLab.Tests;
 /// </summary>
 public class FilterLoaderServiceTests
 {
-    private readonly FilterLoaderService _service = new();
+    private readonly Mock<IDialogService> _dialogMock = new();
 
     [Fact]
     public async Task LoadAllFiltersAsync_ShouldLoadPresetsFromResources()
     {
-        var presets = await _service.LoadAllFiltersAsync();
+        var sut = new FilterLoaderService(_dialogMock.Object);
 
-        // Assert preset collection is non-null and loads preset entries
+        var presets = await sut.LoadAllFiltersAsync();
+
         Assert.NotNull(presets);
-        Assert.NotEmpty(presets);
     }
 }

@@ -4,7 +4,7 @@ LensLab is a professional, high-performance WPF desktop application built on **.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Modern Dark-Mode UI:** A clean, responsive interface powered by `MahApps.Metro` with a focus on usability and aesthetics.
 - **Drag & Drop Loading:** Direct dragging of image files (JPEG, PNG, BMP, TIFF) into the workspace for instant loading.
@@ -14,46 +14,50 @@ LensLab is a professional, high-performance WPF desktop application built on **.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework:** Windows Presentation Foundation (WPF) on `.NET 8.0-windows`
 - **Architectural Pattern:** Model-View-ViewModel (MVVM) utilizing the `CommunityToolkit.Mvvm` library
 - **UI & Icons:** `MahApps.Metro` and `MahApps.Metro.IconPacks.Material`
+- **Database & ORM:** `Microsoft.EntityFrameworkCore.Sqlite` for local persistence (`lenslab.db` storing recent file history, custom filters, and saved projects)
 - **Serialization:** `System.Text.Json` for loading customizable preset configuration files
 - **Image Pipeline:** WPF's native `System.Windows.Media.Imaging` namespace for high-fidelity pixel array manipulation (no legacy `System.Drawing` dependencies)
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
-LensLab/
-├── Models/              - Pure data containers (e.g., ImageModel, FilterPreset)
-├── ViewModels/          - App state controllers and commands (e.g., MainViewModel)
-├── Views/               - Reusable XAML UserControls and MainWindow
-├── Services/            - Business logic services (e.g., FileDialogService, FilterLoaderService)
-├── Converters/          - WPF value converters (e.g., BoolToVisibilityConverter)
-├── Resources/           - XAML Styles and JSON film presets
-│   ├── Styles/          - Centralized UI styles
-│   └── Filters/         - 10 detailed film preset configurations
-└── App.xaml / App.cs    - Programmatic application entry point and bootstrapping
+lenslab/
+├── docs/                - Comprehensive colloquium & architecture guides
+└── LensLab/
+    ├── Data/            - EF Core DbContext and database entities (e.g., LensLabDbContext, RecentFile)
+    ├── Models/          - Pure data containers (e.g., ImageModel, FilterPreset, AdjustmentSettings)
+    ├── ViewModels/      - App state controllers and commands (e.g., MainViewModel)
+    ├── Views/           - Reusable XAML UserControls and MainWindow
+    ├── Services/        - Business logic services (e.g., FileDialogService, FilterLoaderService, ImageProcessingService)
+    ├── Converters/      - WPF value converters (e.g., BoolToVisibilityConverter)
+    ├── Resources/       - XAML Styles and JSON film presets
+    │   ├── Styles/      - Centralized UI styles
+    │   └── Filters/     - 9 detailed film preset configurations (Kodak, Fujifilm, CineStill)
+    └── App.xaml / App.xaml.cs - Programmatic application entry point and bootstrapping
 ```
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### Prerequisites
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) (Community, Professional, or Enterprise)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) (Community, Professional, or Enterprise on Windows)
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ### Running the Application
 1. Clone this repository to your local machine.
 2. Open the solution file `LensLab.sln` or `LensLab_Naren.slnx` in Visual Studio.
-3. Restore the NuGet packages (`CommunityToolkit.Mvvm`, `MahApps.Metro`, `MahApps.Metro.IconPacks.Material`).
+3. Restore the NuGet packages (`CommunityToolkit.Mvvm`, `MahApps.Metro`, `MahApps.Metro.IconPacks.Material`, `Microsoft.EntityFrameworkCore.Sqlite`).
 4. Press **F5** or click **Start** in Visual Studio to build and run the application.
 
-Or build and run via CLI:
+Or build and run via CLI (Windows):
 ```bash
 dotnet build
 dotnet run --project LensLab/LensLab.csproj
@@ -61,7 +65,7 @@ dotnet run --project LensLab/LensLab.csproj
 
 ---
 
-## 🎨 Design Philosophy & Coding Standards
+## Design Philosophy & Coding Standards
 
 - **Simplicity & Reusability (React-like):** The visual layout is decomposed into small, isolated `UserControls` and `DataTemplates` to ensure modularity and clean separation of concerns.
 - **Zero Blocked Threads:** Long-running file loading and rendering pipelines are awaited asynchronously.
