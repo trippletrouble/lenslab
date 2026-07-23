@@ -1,31 +1,32 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LensLab.Data.Entities;
 using LensLab.Models;
 using LensLab.Services;
-using Microsoft.EntityFrameworkCore;
-using LensLab.Data;
-using LensLab.Data.Entities;
 
 namespace LensLab.ViewModels;
 
 /// <summary>
-/// The main ViewModel for the application. Controls general UI state,
-/// status message logging, and orchestrates actions across views.
+/// The main ViewModel for the application. Controls general UI state and orchestrates actions
+/// across child ViewModels and interface-backed services.
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
     private readonly IFileDialogService _fileDialogService;
-    private readonly FilterLoaderService _filterLoaderService;
-    private readonly ImageProcessingService _imageProcessingService;
+    private readonly IDialogService _dialogService;
+    private readonly IFilterLoaderService _filterLoaderService;
+    private readonly IImageProcessingService _imageProcessingService;
+    private readonly IImageLoaderService _imageLoaderService;
+    private readonly IImageExporterService _imageExporterService;
+    private readonly IPresetManagerService _presetManagerService;
+    private readonly IRecentFilesService _recentFilesService;
+
     private CancellationTokenSource? _renderCts;
 
     [ObservableProperty]
@@ -68,18 +69,33 @@ public partial class MainViewModel : ObservableObject
     public AdjustmentViewModel Adjustments { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MainViewModel"/> class.
+    /// Initializes a new instance of the <see cref="MainViewModel"/> class with full constructor injection.
     /// </summary>
-    public MainViewModel()
+    public MainViewModel(
+        IFileDialogService fileDialogService,
+        IDialogService dialogService,
+        IFilterLoaderService filterLoaderService,
+        IImageProcessingService imageProcessingService,
+        IImageLoaderService imageLoaderService,
+        IImageExporterService imageExporterService,
+        IPresetManagerService presetManagerService,
+        IRecentFilesService recentFilesService,
+        FilterGalleryViewModel filterGallery,
+        AdjustmentViewModel adjustments)
     {
-        _fileDialogService = new FileDialogService();
-        _filterLoaderService = new FilterLoaderService();
-        _imageProcessingService = new ImageProcessingService();
-        
-        FilterGallery = new FilterGalleryViewModel();
+        _fileDialogService = fileDialogService;
+        _dialogService = dialogService;
+        _filterLoaderService = filterLoaderService;
+        _imageProcessingService = imageProcessingService;
+        _imageLoaderService = imageLoaderService;
+        _imageExporterService = imageExporterService;
+        _presetManagerService = presetManagerService;
+        _recentFilesService = recentFilesService;
+
+        FilterGallery = filterGallery;
         FilterGallery.FilterSelected += OnFilterSelected;
- 
-        Adjustments = new AdjustmentViewModel();
+
+        Adjustments = adjustments;
         Adjustments.AdjustmentChanged += OnAdjustmentChanged;
 
         // Initialize and load recent files from SQLite database
@@ -87,9 +103,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Asynchronously initializes the ViewModel, loading all available filters.
+    /// Asynchronously initializes the ViewModel, loading all available filter presets.
     /// </summary>
-    /// <returns>A task representing the asynchronous initialization operation.</returns>
     public async Task InitializeAsync()
     {
         try
@@ -102,7 +117,7 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = "Error loading filters";
-            System.Diagnostics.Debug.WriteLine($"Error initializing filters: {ex.Message}");
+            _dialogService.ShowError("Initialization Error", "Failed to load filter presets.", ex);
         }
         finally
         {
@@ -112,7 +127,7 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>
     /// Handler that executes whenever a slider value or opacity changes.
-    /// Cancels any active rendering, debounces inputs, and starts a new one on the Preview image.
+    /// Cancels active rendering, debounces inputs, and starts a new preview render.
     /// </summary>
     private async void OnAdjustmentChanged(object? sender, EventArgs e)
     {
@@ -124,8 +139,6 @@ public partial class MainViewModel : ObservableObject
             _renderCts = new CancellationTokenSource();
             var token = _renderCts.Token;
 
-
-            // Get selected filter from gallery
             var filter = FilterGallery.SelectedFilter?.Filter;
 
             var processedImage = await _imageProcessingService.ApplyEditAsync(
@@ -144,13 +157,12 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error applying adjustments: {ex.Message}");
+            _dialogService.ShowError("Adjustment Error", "Failed to apply slider adjustments.", ex);
         }
     }
 
     /// <summary>
     /// Handler that executes whenever a filter selection changes in the gallery.
-    /// Applies the selected filter to the preview image and updates the viewport.
     /// </summary>
     private async void OnFilterSelected(object? sender, FilterPreset? filter)
     {
@@ -165,7 +177,6 @@ public partial class MainViewModel : ObservableObject
             _renderCts = new CancellationTokenSource();
             var token = _renderCts.Token;
 
-            // Apply selected filter combined with current slider settings
             var processedImage = await _imageProcessingService.ApplyEditAsync(
                 CurrentImage.PreviewImage,
                 Adjustments.Settings,
@@ -185,7 +196,7 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = "Error applying filter";
-            System.Diagnostics.Debug.WriteLine($"Error applying filter: {ex.Message}");
+            _dialogService.ShowError("Filter Error", "Failed to apply filter preset.", ex);
         }
         finally
         {
@@ -194,10 +205,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Asynchronously opens an image file. If no filePath is provided, shows the file dialog.
-    /// Loads the image into memory, generates a 1200px scaled preview version, and sets CurrentImage.
+    /// Asynchronously opens an image file using <see cref="IImageLoaderService"/>.
     /// </summary>
-    /// <param name="filePath">Optional file path to load directly.</param>
     [RelayCommand]
     private async Task OpenImageAsync(string? filePath)
     {
@@ -216,56 +225,28 @@ public partial class MainViewModel : ObservableObject
             IsBusy = true;
             StatusText = "Loading image...";
 
-            // Load the image asynchronously to prevent UI freezing
-            BitmapSource loadedBitmap = await Task.Run(() =>
+            var imageModel = await _imageLoaderService.LoadImageAsync(filePath);
+            if (imageModel == null)
             {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(filePath);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
-                bitmap.Freeze(); // Crucial for cross-thread access in WPF
-                return (BitmapSource)bitmap;
-            });
+                StatusText = "Error loading image";
+                return;
+            }
 
-            // Generate scaled preview (max 1200px dimension) for live UI slider updates
-            BitmapSource previewBitmap = await Task.Run(() =>
-            {
-                double maxDim = Math.Max(loadedBitmap.PixelWidth, loadedBitmap.PixelHeight);
-                if (maxDim > 1200.0)
-                {
-                    double scale = 1200.0 / maxDim;
-                    var scaleTransform = new ScaleTransform(scale, scale);
-                    var resized = new TransformedBitmap(loadedBitmap, scaleTransform);
-                    resized.Freeze();
-                    return (BitmapSource)resized;
-                }
-                return loadedBitmap;
-            });
-
-            CurrentImage = new ImageModel
-            {
-                OriginalImage = loadedBitmap,
-                CurrentImage = previewBitmap,
-                PreviewImage = previewBitmap,
-                FilePath = filePath,
-                FileName = Path.GetFileName(filePath),
-                Width = loadedBitmap.PixelWidth,
-                Height = loadedBitmap.PixelHeight
-            };
-
+            CurrentImage = imageModel;
             StatusText = CurrentImage.FileName ?? "Image loaded";
 
-            // Log to recent files database
-            await AddRecentFileAsync(filePath);
+            await _recentFilesService.AddRecentFileAsync(filePath);
+            await LoadRecentFilesAsync();
 
-            // Trigger thumbnail previews generation in parallel
-            await FilterGallery.LoadFiltersAsync(loadedBitmap);
+            if (CurrentImage.OriginalImage != null)
+            {
+                await FilterGallery.LoadFiltersAsync(CurrentImage.OriginalImage);
+            }
         }
         catch (Exception ex)
         {
             StatusText = "Error loading image";
-            System.Diagnostics.Debug.WriteLine($"Error loading image: {ex.Message}");
+            _dialogService.ShowError("Image Loading Error", "Failed to open selected image.", ex);
         }
         finally
         {
@@ -273,9 +254,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Command to show the custom save preset dialog overlay.
-    /// </summary>
     [RelayCommand]
     private void ShowSavePresetDialog()
     {
@@ -283,26 +261,46 @@ public partial class MainViewModel : ObservableObject
         IsSavePresetDialogVisible = true;
     }
 
-    /// <summary>
-    /// Command to confirm saving the custom preset and hide the dialog.
-    /// </summary>
     [RelayCommand]
     private async Task SavePresetDialogConfirmAsync()
     {
         if (string.IsNullOrWhiteSpace(NewPresetName))
         {
             StatusText = "Preset name cannot be empty";
+            _dialogService.ShowWarning("Save Preset", "Preset name cannot be empty.");
             return;
         }
 
         string presetName = NewPresetName.Trim();
         IsSavePresetDialogVisible = false;
-        await SavePresetInternalAsync(presetName);
+
+        IsBusy = true;
+        StatusText = $"Saving preset '{presetName}'...";
+
+        var activeFilter = FilterGallery.SelectedFilter?.Filter;
+        bool success = await _presetManagerService.SaveCustomPresetAsync(
+            presetName,
+            activeFilter,
+            Adjustments.FilterOpacity,
+            Adjustments.Settings);
+
+        if (success)
+        {
+            Filters = await _filterLoaderService.LoadAllFiltersAsync();
+            if (CurrentImage != null && CurrentImage.OriginalImage != null)
+            {
+                await FilterGallery.LoadFiltersAsync(CurrentImage.OriginalImage);
+            }
+            StatusText = $"Preset '{presetName}' saved successfully";
+        }
+        else
+        {
+            StatusText = "Error saving preset";
+        }
+
+        IsBusy = false;
     }
 
-    /// <summary>
-    /// Command to cancel the save preset dialog.
-    /// </summary>
     [RelayCommand]
     private void SavePresetDialogCancel()
     {
@@ -310,194 +308,35 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Saves the current adjustments as a custom preset JSON file and updates the gallery.
-    /// </summary>
-    private async Task SavePresetInternalAsync(string presetName)
-    {
-        try
-        {
-            IsBusy = true;
-            StatusText = $"Saving preset '{presetName}'...";
-
-            // Gather active filter settings and opacity
-            var activeFilter = FilterGallery.SelectedFilter?.Filter;
-            double opacity = Adjustments.FilterOpacity;
-            double blend = opacity / 100.0;
-
-            var preset = new FilterPreset
-            {
-                Name = presetName,
-                Manufacturer = "User",
-                Category = "User",
-                Description = $"Custom preset created on {DateTime.Now:d}",
-                RecommendedFor = "Custom"
-            };
-
-            // Merge active filter preset values + manual slider adjustments
-            if (activeFilter != null && opacity > 0.0)
-            {
-                preset.Temperature = activeFilter.Temperature * blend + Adjustments.Settings.Temperature;
-                preset.Tint = activeFilter.Tint * blend + Adjustments.Settings.Tint;
-                preset.RedMultiplier = 1.0 + (activeFilter.RedMultiplier - 1.0) * blend;
-                preset.GreenMultiplier = 1.0 + (activeFilter.GreenMultiplier - 1.0) * blend;
-                preset.BlueMultiplier = 1.0 + (activeFilter.BlueMultiplier - 1.0) * blend;
-
-                preset.Brightness = activeFilter.Brightness * blend + Adjustments.Settings.Brightness;
-                preset.Contrast = activeFilter.Contrast * blend + Adjustments.Settings.Contrast;
-                preset.Saturation = activeFilter.Saturation * blend + Adjustments.Settings.Saturation;
-                preset.Highlights = activeFilter.Highlights * blend + Adjustments.Settings.Highlights;
-                preset.Shadows = activeFilter.Shadows * blend + Adjustments.Settings.Shadows;
-                preset.Fade = activeFilter.Fade * blend + Adjustments.Settings.Fade;
-                preset.Grain = activeFilter.Grain * blend + Adjustments.Settings.Grain;
-                preset.Vignette = activeFilter.Vignette * blend + Adjustments.Settings.Vignette;
-
-                // Blend HSL offsets
-                preset.HueRed = activeFilter.HueRed * blend;
-                preset.SaturationRed = activeFilter.SaturationRed * blend;
-                preset.LuminanceRed = activeFilter.LuminanceRed * blend;
-
-                preset.HueOrange = activeFilter.HueOrange * blend;
-                preset.SaturationOrange = activeFilter.SaturationOrange * blend;
-                preset.LuminanceOrange = activeFilter.LuminanceOrange * blend;
-
-                preset.HueYellow = activeFilter.HueYellow * blend;
-                preset.SaturationYellow = activeFilter.SaturationYellow * blend;
-                preset.LuminanceYellow = activeFilter.LuminanceYellow * blend;
-
-                preset.HueGreen = activeFilter.HueGreen * blend;
-                preset.SaturationGreen = activeFilter.SaturationGreen * blend;
-                preset.LuminanceGreen = activeFilter.LuminanceGreen * blend;
-
-                preset.HueAqua = activeFilter.HueAqua * blend;
-                preset.SaturationAqua = activeFilter.SaturationAqua * blend;
-                preset.LuminanceAqua = activeFilter.LuminanceAqua * blend;
-
-                preset.HueBlue = activeFilter.HueBlue * blend;
-                preset.SaturationBlue = activeFilter.SaturationBlue * blend;
-                preset.LuminanceBlue = activeFilter.LuminanceBlue * blend;
-
-                preset.HuePurple = activeFilter.HuePurple * blend;
-                preset.SaturationPurple = activeFilter.SaturationPurple * blend;
-                preset.LuminancePurple = activeFilter.LuminancePurple * blend;
-
-                preset.HueMagenta = activeFilter.HueMagenta * blend;
-                preset.SaturationMagenta = activeFilter.SaturationMagenta * blend;
-                preset.LuminanceMagenta = activeFilter.LuminanceMagenta * blend;
-            }
-            else
-            {
-                preset.Temperature = Adjustments.Settings.Temperature;
-                preset.Tint = Adjustments.Settings.Tint;
-                preset.RedMultiplier = 1.0;
-                preset.GreenMultiplier = 1.0;
-                preset.BlueMultiplier = 1.0;
-
-                preset.Brightness = Adjustments.Settings.Brightness;
-                preset.Contrast = Adjustments.Settings.Contrast;
-                preset.Saturation = Adjustments.Settings.Saturation;
-                preset.Highlights = Adjustments.Settings.Highlights;
-                preset.Shadows = Adjustments.Settings.Shadows;
-                preset.Fade = Adjustments.Settings.Fade;
-                preset.Grain = Adjustments.Settings.Grain;
-                preset.Vignette = Adjustments.Settings.Vignette;
-            }
-
-            // Create directories and write file asynchronously
-            string customDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
-            if (!Directory.Exists(customDir))
-            {
-                Directory.CreateDirectory(customDir);
-            }
-
-            // Sanitize file name by replacing invalid characters with underscore
-            string sanitizedName = string.Join("_", presetName.Split(Path.GetInvalidFileNameChars()));
-            string filePath = Path.Combine(customDir, sanitizedName + ".json");
-
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string jsonContent = JsonSerializer.Serialize(preset, options);
-            await File.WriteAllTextAsync(filePath, jsonContent);
-
-            // Reload filters and update gallery
-            Filters = await _filterLoaderService.LoadAllFiltersAsync();
-            if (CurrentImage != null && CurrentImage.OriginalImage != null)
-            {
-                await FilterGallery.LoadFiltersAsync(CurrentImage.OriginalImage);
-            }
-
-            StatusText = $"Preset '{presetName}' saved successfully";
-        }
-        catch (Exception ex)
-        {
-            StatusText = "Error saving custom preset";
-            System.Diagnostics.Debug.WriteLine($"Error saving preset: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously exports the currently active image at full original resolution,
-    /// applying the selected filter preset and manual slider settings, then saving to JPG or PNG.
+    /// Exports the currently active image at full resolution using <see cref="IImageExporterService"/>.
     /// </summary>
     [RelayCommand]
     private async Task ExportImageAsync()
     {
-        if (CurrentImage == null || CurrentImage.OriginalImage == null) return;
+        if (CurrentImage == null)
+        {
+            _dialogService.ShowWarning("Export Warning", "No active image loaded to export.");
+            return;
+        }
 
         try
         {
-            // Open SaveFileDialog to choose filename and format
-            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "JPEG Image (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG Image (*.png)|*.png",
-                Title = "Export Edited Image",
-                FileName = Path.GetFileNameWithoutExtension(CurrentImage.FileName) + "_edited"
-            };
-
-            if (saveFileDialog.ShowDialog() != true)
-            {
-                return;
-            }
-
             IsBusy = true;
             StatusText = "Exporting image in full resolution...";
 
-            string filePath = saveFileDialog.FileName;
-            string ext = Path.GetExtension(filePath).ToLower();
-
-            // Gather active filter and manual adjustments
             var filter = FilterGallery.SelectedFilter?.Filter;
-            double opacity = Adjustments.FilterOpacity;
-            var settings = Adjustments.Settings;
+            bool success = await _imageExporterService.ExportImageAsync(
+                CurrentImage,
+                Adjustments.Settings,
+                filter,
+                Adjustments.FilterOpacity);
 
-            // Render off-thread at full resolution
-            BitmapSource processedBitmap = await Task.Run(async () =>
-            {
-                return await _imageProcessingService.ApplyEditAsync(
-                    CurrentImage.OriginalImage,
-                    settings,
-                    filter,
-                    opacity,
-                    CancellationToken.None);
-            });
-
-            // Save file to disk off-thread
-            await Task.Run(() =>
-            {
-                using var fileStream = new FileStream(filePath, FileMode.Create);
-                BitmapEncoder encoder = (ext == ".png") ? (BitmapEncoder)new PngBitmapEncoder() : new JpegBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(processedBitmap));
-                encoder.Save(fileStream);
-            });
-
-            StatusText = "Image exported successfully!";
+            StatusText = success ? "Image exported successfully!" : "Export cancelled";
         }
         catch (Exception ex)
         {
             StatusText = "Error exporting image";
-            System.Diagnostics.Debug.WriteLine($"Error exporting image: {ex.Message}");
+            _dialogService.ShowError("Export Error", "An error occurred while exporting the image.", ex);
         }
         finally
         {
@@ -506,38 +345,27 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Asynchronously initializes the database schema if needed and loads the top 5 recent files.
+    /// Loads recent files from SQLite database using <see cref="IRecentFilesService"/>.
     /// </summary>
     public async Task LoadRecentFilesAsync()
     {
         try
         {
-            using var db = new LensLabDbContext();
-            // Automatically create database and tables if they don't exist
-            await db.Database.EnsureCreatedAsync();
-
-            var list = await db.RecentFiles
-                .OrderByDescending(f => f.LastOpened)
-                .Take(10)
-                .ToListAsync();
-
-            // Filter out non-existent files to avoid showing stale paths from another machine
-            var validItems = list.Where(f => File.Exists(f.FilePath)).Take(5).ToList();
-
-            // Safely update ObservableCollection on WPF Dispatcher thread
+            var files = await _recentFilesService.GetRecentFilesAsync();
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
+
             if (dispatcher != null && !dispatcher.CheckAccess())
             {
-                dispatcher.Invoke(() => PopulateRecentFiles(validItems));
+                dispatcher.Invoke(() => PopulateRecentFiles(files));
             }
             else
             {
-                PopulateRecentFiles(validItems);
+                PopulateRecentFiles(files);
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading recent files: {ex.Message}");
+            _dialogService.ShowError("Recent Files Error", "Failed to load recent files history.", ex);
         }
     }
 
@@ -551,56 +379,6 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Adds a file path to the recent files database or updates its last opened timestamp.
-    /// prunes older items to keep only 5.
-    /// </summary>
-    private async Task AddRecentFileAsync(string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath)) return;
-
-        try
-        {
-            using var db = new LensLabDbContext();
-            var existing = await db.RecentFiles.FirstOrDefaultAsync(f => f.FilePath == filePath);
-            if (existing != null)
-            {
-                existing.LastOpened = DateTime.Now;
-                db.RecentFiles.Update(existing);
-            }
-            else
-            {
-                var recent = new RecentFile
-                {
-                    FilePath = filePath,
-                    FileName = Path.GetFileName(filePath),
-                    LastOpened = DateTime.Now
-                };
-                await db.RecentFiles.AddAsync(recent);
-            }
-
-            await db.SaveChangesAsync();
-
-            // Keep only top 5, delete older ones
-            var all = await db.RecentFiles.OrderByDescending(f => f.LastOpened).ToListAsync();
-            if (all.Count > 5)
-            {
-                for (int i = 5; i < all.Count; i++)
-                {
-                    db.RecentFiles.Remove(all[i]);
-                }
-                await db.SaveChangesAsync();
-            }
-
-            // Refresh collection
-            await LoadRecentFilesAsync();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error adding recent file: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// Command to open a recent file clicked from the dashboard.
     /// </summary>
     [RelayCommand]
@@ -610,7 +388,7 @@ public partial class MainViewModel : ObservableObject
         
         if (!File.Exists(file.FilePath))
         {
-            System.Windows.MessageBox.Show("Die Datei existiert nicht mehr an diesem Ort.", "Fehler beim Öffnen", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _dialogService.ShowError("File Not Found", "The requested file no longer exists at this path.");
             return;
         }
 

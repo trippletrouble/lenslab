@@ -12,7 +12,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LensLab.Models;
 using LensLab.Services;
-using Microsoft.Win32;
 
 namespace LensLab.ViewModels;
 
@@ -21,8 +20,10 @@ namespace LensLab.ViewModels;
 /// </summary>
 public partial class FilterGalleryViewModel : ObservableObject
 {
-    private readonly FilterLoaderService _filterLoaderService;
-    private readonly ImageProcessingService _imageProcessingService;
+    private readonly IFilterLoaderService _filterLoaderService;
+    private readonly IImageProcessingService _imageProcessingService;
+    private readonly IDialogService? _dialogService;
+    private readonly IFileDialogService? _fileDialogService;
     private BitmapSource? _originalImageSource;
 
     [ObservableProperty]
@@ -47,80 +48,109 @@ public partial class FilterGalleryViewModel : ObservableObject
     public event EventHandler<FilterPreset?>? FilterSelected;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FilterGalleryViewModel"/> class.
+    /// Initializes a new instance of the <see cref="FilterGalleryViewModel"/> class with dependency injection.
     /// </summary>
-    public FilterGalleryViewModel()
+    public FilterGalleryViewModel(
+        IFilterLoaderService filterLoaderService,
+        IImageProcessingService imageProcessingService,
+        IDialogService? dialogService = null,
+        IFileDialogService? fileDialogService = null)
     {
-        _filterLoaderService = new FilterLoaderService();
-        _imageProcessingService = new ImageProcessingService();
+        _filterLoaderService = filterLoaderService;
+        _imageProcessingService = imageProcessingService;
+        _dialogService = dialogService;
+        _fileDialogService = fileDialogService;
+    }
+
+    /// <summary>
+    /// Helper method to get the AppData custom presets directory (%APPDATA%/LensLab/CustomPresets).
+    /// </summary>
+    private string GetCustomPresetsDirectory()
+    {
+        string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return Path.Combine(appData, "LensLab", "CustomPresets");
     }
 
     /// <summary>
     /// Asynchronously loads all filter presets, scales down the source image,
     /// applies the presets in parallel, and populates the filter list with thumbnails.
     /// </summary>
-    /// <param name="sourceImage">The source image to generate thumbnails from.</param>
     public async Task LoadFiltersAsync(BitmapSource sourceImage)
     {
         if (sourceImage == null) return;
-        _originalImageSource = sourceImage;
 
         try
         {
             IsLoading = true;
+            _originalImageSource = sourceImage;
 
-            // Load presets from JSON files
-            var loadedPresets = await _filterLoaderService.LoadAllFiltersAsync();
+            // Load presets asynchronously
+            var presets = await _filterLoaderService.LoadAllFiltersAsync();
 
-            // Sort presets by category order (Portrait -> Vintage -> Street -> Cinematic -> Monochrome)
-            Func<string, int> getCategoryWeight = (cat) => cat switch
+            // Downscale source image to 120px width for fast thumbnail rendering
+            BitmapSource thumbnailSource = await Task.Run(() =>
             {
-                "Portrait" => 0,
-                "Vintage & Warm" => 1,
-                "Street & Moody" => 2,
-                "Cinematic & Flat" => 3,
-                "Monochrome" => 4,
-                _ => 5
-            };
-
-            var presets = loadedPresets
-                .OrderBy(p => getCategoryWeight(p.Category))
-                .ThenBy(p => p.Name)
-                .ToList();
-
-            // Downscale the image to 120px width to speed up thumbnail generation
-            double scale = 120.0 / sourceImage.PixelWidth;
-            var scaleTransform = new ScaleTransform(scale, scale);
-            var resizedBitmap = new TransformedBitmap(sourceImage, scaleTransform);
-            resizedBitmap.Freeze();
-
-            // Generate thumbnails in parallel
-            var tasks = presets.Select(async preset =>
-            {
-                // Applying the filter to the downscaled thumbnail
-                var thumbnail = await _imageProcessingService.ApplyEditAsync(
-                    resizedBitmap, 
-                    new AdjustmentSettings(), 
-                    preset, 
-                    CancellationToken.None);
-                
-                return new FilterPreviewItem(preset, thumbnail);
+                double targetWidth = 120.0;
+                double scale = targetWidth / sourceImage.PixelWidth;
+                var scaleTransform = new ScaleTransform(scale, scale);
+                var resized = new TransformedBitmap(sourceImage, scaleTransform);
+                resized.Freeze();
+                return (BitmapSource)resized;
             });
 
-            var previewItems = await Task.WhenAll(tasks);
+            // Process thumbnails in parallel off-thread
+            var emptySettings = new AdjustmentSettings();
 
-            Filters.Clear();
-            foreach (var item in previewItems)
+            var previewItems = await Task.Run(async () =>
             {
-                Filters.Add(item);
-            }
+                var items = new List<FilterPreviewItem>();
 
-            // Select none initially
-            SelectedFilter = null;
+                // Add "None" option first
+                items.Add(new FilterPreviewItem
+                {
+                    Filter = new FilterPreset { Name = "Original", Category = "Default" },
+                    Thumbnail = thumbnailSource,
+                    IsSelected = SelectedFilter == null || SelectedFilter.Filter.Name == "Original"
+                });
+
+                var tasks = presets.Select(async preset =>
+                {
+                    var processedThumbnail = await _imageProcessingService.ApplyEditAsync(
+                        thumbnailSource,
+                        emptySettings,
+                        preset,
+                        100.0,
+                        CancellationToken.None);
+
+                    return new FilterPreviewItem
+                    {
+                        Filter = preset,
+                        Thumbnail = processedThumbnail,
+                        IsSelected = SelectedFilter != null && SelectedFilter.Filter.Name == preset.Name
+                    };
+                });
+
+                var results = await Task.WhenAll(tasks);
+                items.AddRange(results);
+                return items;
+            });
+
+            Filters = new ObservableCollection<FilterPreviewItem>(previewItems);
+
+            // Re-select currently selected filter if it exists in the new list
+            if (SelectedFilter != null)
+            {
+                var match = Filters.FirstOrDefault(f => f.Filter.Name == SelectedFilter.Filter.Name);
+                if (match != null)
+                {
+                    SelectedFilter = match;
+                }
+            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading gallery: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Error loading filter previews: {ex.Message}");
+            _dialogService?.ShowError("Filter Preview Error", "Failed to generate filter preview thumbnails.", ex);
         }
         finally
         {
@@ -128,13 +158,27 @@ public partial class FilterGalleryViewModel : ObservableObject
         }
     }
 
+    partial void OnSelectedFilterChanged(FilterPreviewItem? value)
+    {
+        // Update IsSelected property on all preview items
+        foreach (var item in Filters)
+        {
+            item.IsSelected = (item == value);
+        }
+
+        // Trigger selection event (null if "Original" / None is selected)
+        FilterPreset? presetToApply = (value != null && value.Filter.Name != "Original") ? value.Filter : null;
+        FilterSelected?.Invoke(this, presetToApply);
+    }
+
     /// <summary>
-    /// Selects the next filter in the gallery list.
+    /// Command to select the next filter in the gallery.
     /// </summary>
-    public void SelectNextFilter()
+    [RelayCommand]
+    private void SelectNextFilter()
     {
         if (Filters == null || Filters.Count == 0) return;
-        
+
         int index = SelectedFilter != null ? Filters.IndexOf(SelectedFilter) : -1;
         if (index < Filters.Count - 1)
         {
@@ -143,9 +187,10 @@ public partial class FilterGalleryViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Selects the previous filter in the gallery list.
+    /// Command to select the previous filter in the gallery.
     /// </summary>
-    public void SelectPreviousFilter()
+    [RelayCommand]
+    private void SelectPreviousFilter()
     {
         if (Filters == null || Filters.Count == 0) return;
         
@@ -170,20 +215,17 @@ public partial class FilterGalleryViewModel : ObservableObject
 
         try
         {
-            // Sanitize file name
-            string sanitizedName = string.Join("_", item.Filter.Name.Split(System.IO.Path.GetInvalidFileNameChars()));
-            string customDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
-            string filePath = System.IO.Path.Combine(customDir, sanitizedName + ".json");
+            string sanitizedName = string.Join("_", item.Filter.Name.Split(Path.GetInvalidFileNameChars()));
+            string customDir = GetCustomPresetsDirectory();
+            string filePath = Path.Combine(customDir, sanitizedName + ".json");
 
-            if (System.IO.File.Exists(filePath))
+            if (File.Exists(filePath))
             {
-                System.IO.File.Delete(filePath);
+                File.Delete(filePath);
             }
 
-            // Remove from collection
             Filters.Remove(item);
 
-            // If it was selected, clear selection
             if (SelectedFilter == item)
             {
                 SelectedFilter = null;
@@ -192,12 +234,10 @@ public partial class FilterGalleryViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error deleting preset: {ex.Message}");
+            _dialogService?.ShowError("Preset Delete Error", $"Failed to delete preset '{item.Filter.Name}'.", ex);
         }
     }
 
-    /// <summary>
-    /// Shows the deletion confirmation overlay for the specified preset.
-    /// </summary>
     [RelayCommand]
     private void ShowDeleteConfirm(FilterPreviewItem item)
     {
@@ -206,9 +246,6 @@ public partial class FilterGalleryViewModel : ObservableObject
         IsDeleteConfirmDialogVisible = true;
     }
 
-    /// <summary>
-    /// Confirms the deletion of the preset, executes the delete command, and closes the overlay.
-    /// </summary>
     [RelayCommand]
     private void ConfirmDelete()
     {
@@ -220,9 +257,6 @@ public partial class FilterGalleryViewModel : ObservableObject
         IsDeleteConfirmDialogVisible = false;
     }
 
-    /// <summary>
-    /// Cancels the deletion and closes the overlay.
-    /// </summary>
     [RelayCommand]
     private void CancelDelete()
     {
@@ -240,61 +274,48 @@ public partial class FilterGalleryViewModel : ObservableObject
 
         try
         {
-            // Sanitize file name for default dialog name
             string sanitizedName = string.Join("_", SelectedFilter.Filter.Name.Split(Path.GetInvalidFileNameChars()));
+            string? destinationPath = _fileDialogService?.SaveImageFile(sanitizedName);
 
-            var saveFileDialog = new SaveFileDialog
-            {
-                Filter = "JSON Preset File (*.json)|*.json",
-                Title = "Export Preset File",
-                FileName = sanitizedName
-            };
+            if (string.IsNullOrEmpty(destinationPath)) return;
 
-            if (saveFileDialog.ShowDialog() != true) return;
-
-            string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets", sanitizedName + ".json");
+            string sourcePath = Path.Combine(GetCustomPresetsDirectory(), sanitizedName + ".json");
 
             if (File.Exists(sourcePath))
             {
-                File.Copy(sourcePath, saveFileDialog.FileName, overwrite: true);
+                File.Copy(sourcePath, destinationPath, overwrite: true);
+                _dialogService?.ShowInformation("Preset Export", "Custom preset exported successfully.");
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error exporting preset: {ex.Message}");
+            _dialogService?.ShowError("Preset Export Error", "Failed to export preset file.", ex);
         }
     }
 
     /// <summary>
-    /// Command to import a custom preset JSON file, validate it, and copy it to the local app presets directory.
+    /// Command to import a custom preset JSON file, validate it, and copy it to AppData custom presets.
     /// </summary>
     [RelayCommand]
     private async Task ImportPresetAsync()
     {
         try
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "JSON Preset File (*.json)|*.json",
-                Title = "Import Custom Preset"
-            };
+            string? sourcePath = _fileDialogService?.OpenImageFile(); // or file picker
+            if (string.IsNullOrEmpty(sourcePath)) return;
 
-            if (openFileDialog.ShowDialog() != true) return;
-
-            string sourcePath = openFileDialog.FileName;
             string jsonContent = await File.ReadAllTextAsync(sourcePath);
 
-            // Validate format by trying to deserialize
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var preset = JsonSerializer.Deserialize<FilterPreset>(jsonContent, options);
 
             if (preset == null || string.IsNullOrWhiteSpace(preset.Name))
             {
-                System.Windows.MessageBox.Show("Invalid preset file format. The preset must contain a valid Name.", "Import Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                _dialogService?.ShowError("Import Error", "Invalid preset file format. The preset must contain a valid Name.");
                 return;
             }
 
-            // Standardize fields to force User categorization
             preset.Manufacturer = "User";
             preset.Category = "User";
             if (string.IsNullOrWhiteSpace(preset.RecommendedFor))
@@ -302,8 +323,7 @@ public partial class FilterGalleryViewModel : ObservableObject
                 preset.RecommendedFor = "Custom";
             }
 
-            // Save to local custom directory
-            string customDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
+            string customDir = GetCustomPresetsDirectory();
             if (!Directory.Exists(customDir))
             {
                 Directory.CreateDirectory(customDir);
@@ -316,28 +336,17 @@ public partial class FilterGalleryViewModel : ObservableObject
             string formattedJson = JsonSerializer.Serialize(preset, writeOptions);
             await File.WriteAllTextAsync(destPath, formattedJson);
 
-            // Reload gallery previews if we have a loaded original image reference
             if (_originalImageSource != null)
             {
                 await LoadFiltersAsync(_originalImageSource);
             }
-            else
-            {
-                System.Windows.MessageBox.Show($"Preset '{preset.Name}' imported successfully. It will be visible once an image is loaded.", "Import Successful", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
+
+            _dialogService?.ShowInformation("Import Success", $"Preset '{preset.Name}' imported successfully.");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Error importing preset: {ex.Message}", "Import Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Diagnostics.Debug.WriteLine($"Error importing preset: {ex.Message}");
+            _dialogService?.ShowError("Import Error", "Failed to import preset file.", ex);
         }
-    }
-
-    partial void OnSelectedFilterChanged(FilterPreviewItem? oldValue, FilterPreviewItem? newValue)
-    {
-        // Adjust the IsSelected states in the previews
-        if (oldValue != null) oldValue.IsSelected = false;
-        if (newValue != null) newValue.IsSelected = true;
-
-        FilterSelected?.Invoke(this, newValue?.Filter);
     }
 }
