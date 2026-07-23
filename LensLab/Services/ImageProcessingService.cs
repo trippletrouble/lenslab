@@ -11,7 +11,7 @@ namespace LensLab.Services;
 /// Provides high-performance pixel-level image processing functions, 
 /// including color space conversions and core adjustments.
 /// </summary>
-public class ImageProcessingService
+public class ImageProcessingService : IImageProcessingService
 {
     /// <summary>
     /// Extracts the raw pixel byte array from a BitmapSource.

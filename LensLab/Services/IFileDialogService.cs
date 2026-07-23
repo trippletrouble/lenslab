@@ -11,4 +11,11 @@ public interface IFileDialogService
     /// </summary>
     /// <returns>The full path of the selected image file, or null if the selection was cancelled.</returns>
     string? OpenImageFile();
+
+    /// <summary>
+    /// Displays a file save dialog for exporting an image file.
+    /// </summary>
+    /// <param name="defaultFileName">Default file name suggested in the dialog.</param>
+    /// <returns>The full destination path, or null if cancelled.</returns>
+    string? SaveImageFile(string defaultFileName);
 }

@@ -11,14 +11,20 @@ namespace LensLab.Services;
 
 /// <summary>
 /// Service responsible for loading and deserializing film emulation filter presets from local JSON files.
+/// Custom presets are loaded from %APPDATA%/LensLab/CustomPresets.
 /// </summary>
-public class FilterLoaderService
+public class FilterLoaderService : IFilterLoaderService
 {
+    private readonly IDialogService? _dialogService;
+
+    public FilterLoaderService(IDialogService? dialogService = null)
+    {
+        _dialogService = dialogService;
+    }
+
     /// <summary>
-    /// Asynchronously loads all filter presets (*.json) from the "Resources/Filters/" directory.
-    /// In case of deserialization errors in individual files, the error is logged to debug output and the file is skipped.
+    /// Asynchronously loads all filter presets (*.json) from "Resources/Filters/" and AppData custom directory.
     /// </summary>
-    /// <returns>A sorted list of filter presets, ordered by Manufacturer, then by Name.</returns>
     public async Task<List<FilterPreset>> LoadAllFiltersAsync()
     {
         return await Task.Run(() =>
@@ -26,7 +32,10 @@ public class FilterLoaderService
             var presets = new List<FilterPreset>();
 
             string filtersDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Filters");
-            string customDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CustomPresets");
+            
+            // Custom presets stored in user AppData folder (%APPDATA%/LensLab/CustomPresets)
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string customDir = Path.Combine(appData, "LensLab", "CustomPresets");
 
             // Ensure custom presets folder exists
             try
@@ -52,10 +61,6 @@ public class FilterLoaderService
                 {
                     Debug.WriteLine($"Error scanning filters directory: {ex.Message}");
                 }
-            }
-            else
-            {
-                Debug.WriteLine($"Filters directory not found at: {filtersDir}");
             }
 
             if (Directory.Exists(customDir))
@@ -95,7 +100,6 @@ public class FilterLoaderService
                     }
                     catch (Exception ex)
                     {
-                        // Log error and skip the malformed preset file to prevent app-wide failures
                         Debug.WriteLine($"Failed to load filter preset from file '{file}': {ex.Message}");
                     }
                 }
@@ -103,6 +107,7 @@ public class FilterLoaderService
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error scanning files: {ex.Message}");
+                _dialogService?.ShowError("Filter Loading Error", "Failed to scan preset directory.", ex);
             }
 
             // Sort presets first by Manufacturer, then by Name

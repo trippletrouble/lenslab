@@ -23,4 +23,23 @@ public class FileDialogService : IFileDialogService
 
         return result == true ? openFileDialog.FileName : null;
     }
+
+    /// <summary>
+    /// Displays a standard save file dialog configured for exporting JPEG/PNG images.
+    /// </summary>
+    /// <param name="defaultFileName">Default suggested file name.</param>
+    /// <returns>Destination path, or null if cancelled.</returns>
+    public string? SaveImageFile(string defaultFileName)
+    {
+        var saveFileDialog = new SaveFileDialog
+        {
+            Filter = "JPEG Image (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG Image (*.png)|*.png",
+            Title = "Export Edited Image",
+            FileName = defaultFileName
+        };
+
+        bool? result = saveFileDialog.ShowDialog();
+
+        return result == true ? saveFileDialog.FileName : null;
+    }
 }
