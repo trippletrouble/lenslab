@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LensLab.Data.Entities;
 using LensLab.Models;
 using LensLab.Services;
 using LensLab.ViewModels;
@@ -107,5 +108,79 @@ public class MainViewModelTests
         Assert.NotNull(sut.CurrentImage);
         Assert.Equal("sample.jpg", sut.CurrentImage.FileName);
         _recentFilesMock.Verify(x => x.AddRecentFileAsync(testPath), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePresetDialogConfirmCommand_WhenNameIsEmpty_ShowsWarningDialog()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.NewPresetName = "   ";
+
+        // Act
+        await sut.SavePresetDialogConfirmCommand.ExecuteAsync(null);
+
+        // Assert
+        _dialogMock.Verify(x => x.ShowWarning("Save Preset", "Preset name cannot be empty."), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePresetDialogConfirmCommand_WithValidName_CallsPresetManagerService()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.NewPresetName = "Custom Preset 1";
+        _presetManagerMock.Setup(x => x.SaveCustomPresetAsync("Custom Preset 1", It.IsAny<FilterPreset?>(), It.IsAny<double>(), It.IsAny<AdjustmentSettings>())).ReturnsAsync(true);
+        _filterLoaderMock.Setup(x => x.LoadAllFiltersAsync()).ReturnsAsync(new List<FilterPreset>());
+
+        // Act
+        await sut.SavePresetDialogConfirmCommand.ExecuteAsync(null);
+
+        // Assert
+        _presetManagerMock.Verify(x => x.SaveCustomPresetAsync("Custom Preset 1", It.IsAny<FilterPreset?>(), It.IsAny<double>(), It.IsAny<AdjustmentSettings>()), Times.Once);
+        Assert.False(sut.IsSavePresetDialogVisible);
+    }
+
+    [Fact]
+    public async Task ExportImageCommand_WhenNoImageLoaded_ShowsWarningDialog()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        // Act
+        await sut.ExportImageCommand.ExecuteAsync(null);
+
+        // Assert
+        _dialogMock.Verify(x => x.ShowWarning("Export Warning", "No active image loaded to export."), Times.Once);
+        _imageExporterMock.Verify(x => x.ExportImageAsync(It.IsAny<ImageModel>(), It.IsAny<AdjustmentSettings>(), It.IsAny<FilterPreset?>(), It.IsAny<double>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExportImageCommand_WhenImageLoaded_DelegatesToExporterService()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.CurrentImage = new ImageModel { FileName = "test.jpg" };
+        _imageExporterMock.Setup(x => x.ExportImageAsync(It.IsAny<ImageModel>(), It.IsAny<AdjustmentSettings>(), It.IsAny<FilterPreset?>(), It.IsAny<double>())).ReturnsAsync(true);
+
+        // Act
+        await sut.ExportImageCommand.ExecuteAsync(null);
+
+        // Assert
+        _imageExporterMock.Verify(x => x.ExportImageAsync(sut.CurrentImage, It.IsAny<AdjustmentSettings>(), It.IsAny<FilterPreset?>(), It.IsAny<double>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task OpenRecentFileCommand_WhenFileDoesNotExist_ShowsErrorDialog()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var recentFile = new RecentFile { FilePath = "C:\\non_existent\\missing.jpg", FileName = "missing.jpg" };
+
+        // Act
+        await sut.OpenRecentFileCommand.ExecuteAsync(recentFile);
+
+        // Assert
+        _dialogMock.Verify(x => x.ShowError("File Not Found", It.IsAny<string>(), null), Times.Once);
     }
 }

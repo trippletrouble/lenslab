@@ -21,4 +21,15 @@ public class RecentFilesServiceTests
         // Assert
         Assert.NotNull(result);
     }
+
+    [Fact]
+    public async Task AddRecentFileAsync_WhenFilePathIsNullOrEmpty_DoesNotThrow()
+    {
+        // Arrange
+        var sut = new RecentFilesService(_dialogMock.Object);
+
+        // Act & Assert
+        await sut.AddRecentFileAsync("");
+        await sut.AddRecentFileAsync(null!);
+    }
 }
