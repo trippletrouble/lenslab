@@ -1,8 +1,6 @@
 # LensLab – Analog Film Emulation & Photo Editor
-## Dokumentation zur Studienarbeit (.NET-Programmierung mit C# und WPF)
+## Projektdokumentation (.NET-Programmierung mit C# und WPF)
 
-**Studiengang:** Informatik / Media Engineering / Computer Science  
-**Semester:** Sommersemester 2026  
 **Technologie-Stack:** C#, .NET 8 LTS, WPF, MVVM, Entity Framework Core, SQLite, xUnit  
 
 ---
@@ -185,15 +183,15 @@ $$V_{\text{neu}} = \operatorname{Clamp}_0^{255}\left(V_{\text{alt}} + n\right)$$
 
 ### 4.2 Transparenzangabe zum KI-Einsatz
 
-Gemäß den Vorgaben der Studienarbeit wird der Einsatz von KI-Unterstützung (Antigravity / LLM-Assistenten) wie folgt transparent angegeben:
+Der Einsatz von KI-Unterstützung (Antigravity / LLM-Assistenten) während der Entwicklung wird wie folgt transparent dokumentiert:
 
 - **Konkrete Einsatzbereiche der KI:**
   1. **Mathematische Formeln & Algorithmen:** Unterstützung bei der präzisen mathematischen Formulierung von Farbraum-Konvertierungen (RGB ↔ HSL) sowie der radialen Distanzberechnung für Vignetteneffekte im `ImageProcessingService`.
   2. **Debugging:** Hilfe bei der Analyse von Asynchronitäts- und Threading-Konflikten (WPF Dispatcher Marshaling bei `ObservableCollection`).
   3. **Code Quality Reviewing:** Überprüfung der MVVM-Konformität (z. B. Umwandlung von Code-Behind Dialogen in XAML Popup-Overlays).
   4. **Dokumentation:** Unterstützung beim Verfassen sauberer XML-Dokumentationskommentare (`/// <summary>`) für C#-Klassen und öffentliche Methoden.
-- **Eigenleistung & Code-Verständnis:**
-  Die Konzeption der Anwendung, die Verteilung der Architektur, die Gestaltung der XAML-Benutzeroberflächen, die Zusammenstellung der Film-Presets sowie die Implementierung der Geschäftslogik wurden eigenständig durchgeführt. Der gesamte Quellcode und die technischen Zusammenhänge wurden vollständig verstanden und können im Kolloquium vollumfänglich erklärt werden.
+- **Eigenleistung & Systemverständnis:**
+  Die Konzeption der Anwendung, die Verteilung der Architektur, die Gestaltung der XAML-Benutzeroberflächen, die Zusammenstellung der Film-Presets sowie die Implementierung der Geschäftslogik wurden eigenständig durchgeführt. Der gesamte Quellcode und die technischen Zusammenhänge wurden vollständig erarbeitet und dokumentiert.
 
 ---
 
