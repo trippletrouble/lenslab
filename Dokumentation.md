@@ -42,7 +42,7 @@ Kommerzielle Bildbearbeitungssoftware wie Adobe Lightroom oder Capture One ist f
 1. **Live Film-Emulation (10+ Presets):** Sofortige Vorschau von Filmklassikern wie *Fujifilm Classic Chrome*, *Kodak Gold 200*, *Cinestill 800T* oder *Kodak Tri-X 400*.
 2. **Dynamic Opacity Blending:** Stufenlose Regelung der Filter-Deckkraft (0–100 %), um den Filmlook dezent mit den Originalfarben des Bildes zu mischen.
 3. **Analoge Textureffekte & Belichtungskorrekturen:** Mathematische Simulation von monochromatischem Filmkorn (`Grain`), radialer Randabdunkelung (`Vignette`), mattem Schwarzpunkt (`Fade`) sowie gezielter Highlights- und Shadows-Anpassung.
-4. **Custom Presets (JSON Import & Export):** Mischen von Presets und eigenen Slider-Anpassungen, dateibasiertes Speichern unter `CustomPresets/` sowie Teilen als `.json`-Dateien.
+4. **Custom Presets (JSON Import & Export):** Mischen von Presets und eigenen Slider-Anpassungen, dateibasiertes Speichern unter `%APPDATA%/LensLab/CustomPresets` sowie Teilen als `.json`-Dateien.
 5. **Lossless High-Res Export:** Hintergrund-Rendering und verlustfreies Speichern des bearbeiteten Fotos in voller Originalauflösung (JPG/PNG).
 6. **Start-Dashboard & SQLite History:** Automatisches Erfassen der zuletzt geöffneten Dateien mittels Entity Framework Core und SQLite zur schnellen Wiederaufnahme der Bearbeitung.
 
@@ -75,7 +75,7 @@ Verwende die Regler in der rechten Leiste für individuelle Anpassungen:
 - **Präzisions-Bedienung:** Nutze die Chevron-Buttons (`<` `>`) neben den Slidern für genaue Schritt-Anpassungen. Ein **Doppelklick auf einen Slider** setzt dessen Wert sofort wieder auf den Standardwert (`0.0`) zurück.
 
 #### Schritt 5: Custom Preset speichern & Bild exportieren
-- Klicke im rechten Panel auf **"Save as Custom Preset"**, um deine aktuelle Regler-Kombination als eigenes Film-Preset zu speichern. Es erscheint sofort in der linken Galerie unter der Kategorie *"User"*.
+- Klicke im rechten Panel auf **"Save as Custom Preset"**, um deine aktuelle Regler-Kombination als eigenes Film-Preset zu speichern (gespeichert in `%APPDATA%/LensLab/CustomPresets`). Es erscheint sofort in der linken Galerie unter der Kategorie *"User"*.
 - Klicke in der oberen Leiste auf **"Export Image"**, wähle den Dateipfad sowie das Format (JPG oder PNG). LensLab rendert dein Bild in voller Originalauflösung im Hintergrund.
 
 ---
@@ -86,7 +86,7 @@ Verwende die Regler in der rechten Leiste für individuelle Anpassungen:
 | :--- | :--- | :--- |
 | **Start-Dashboard** | Recent Files & Landingpage | Übersichtliche Startansicht mit Schnellzugriff auf die zuletzt genutzten Dateien. |
 | **Filter-Galerie** | Parallel Thumbnails | Generiert kleine 120px-Vorschauen aller Filter parallel via `Task.WhenAll`. |
-| **Preset Management** | JSON Import / Export / Delete | Eigene Looks als `.json`-Datei sichern, importieren oder wieder löschen. |
+| **Preset Management** | JSON Import / Export / Delete | Eigene Looks unter `%APPDATA%/LensLab/CustomPresets` sichern, importieren oder löschen. |
 | **Render-Engine** | Bgra32 Pixel Pipeline | Schnelle Farbraum-Konvertierung (RGB ↔ HSL) und in-place Pixel-Manipulation. |
 | **High-Res Export** | Off-Thread Rendering | Rendert das volle Originalbild ohne UI-Blockierung auf dem Thread-Pool. |
 | **Datenbank** | EF Core + SQLite | Vergleicht und speichert die Top 5 zuletzt geöffneten Dateien in `lenslab.db`. |
@@ -96,7 +96,7 @@ Verwende die Regler in der rechten Leiste für individuelle Anpassungen:
 ## 3. Technische Architektur & MVVM
 
 ### 3.1 Struktur der Komponenten (MVVM-Pattern)
-LensLab baut konsequent auf dem **Model-View-ViewModel (MVVM)** Entwurfsmuster auf, welches von Microsoft für WPF-Anwendungen empfohlen wird:
+LensLab baut konsequent auf dem **Model-View-ViewModel (MVVM)** Entwurfsmuster auf. Sämtliche Dienste sind strikt über **Interfaces** entkoppelt und werden über den IoC-Container (`Microsoft.Extensions.DependencyInjection` in `App.xaml.cs`) per **Constructor Injection** aufgelöst:
 
 - **Models (`LensLab.Models` & `LensLab.Data.Entities`):** Reine Datencontainer ohne UI-Logik.
   - `ImageModel.cs` (`LensLab/Models/ImageModel.cs`): Verwaltet das hochauflösende Originalbild, die 1200px-Arbeitskopie und das gerenderte Zielbild.
@@ -104,15 +104,20 @@ LensLab baut konsequent auf dem **Model-View-ViewModel (MVVM)** Entwurfsmuster a
   - `RecentFile.cs` (`LensLab/Data/Entities/RecentFile.cs`): EF Core Entität für die Datenbankhistorie.
 - **Views (`LensLab.Views`):** Deklarative Benutzeroberflächen in XAML.
   - `MainWindow.xaml` (`LensLab/Views/MainWindow.xaml`): Hauptfenster mit 3-Spalten-Layout und dynamic Grid-Triggern.
-  - `FilterGalleryView.xaml` (`LensLab/Views/FilterGalleryView.xaml`) & `AdjustmentPanel.xaml` (`LensLab/Views/AdjustmentPanel.xaml`): Modulare UserControls.
-  - *Code-Behind (`.xaml.cs`)* enthält ausschließlich UI-Events wie Drag & Drop oder Key-Routing.
+  - `FilterGalleryView.xaml` & `AdjustmentPanel.xaml`: Modulare UserControls.
+  - *Code-Behind (`.xaml.cs`)* enthält ausschließlich technisch notwendige UI-Events (Drag & Drop, Key-Routing). ViewModels erzeugen keinerlei GUI-Elemente.
 - **ViewModels (`LensLab.ViewModels`):** Zustandsverwaltung und Logikbindung.
-  - `MainViewModel.cs` (`LensLab/ViewModels/MainViewModel.cs`): Hauptsteuerung für Bild-Laden, Export, Save-Dialoge und Datenbank-Aufrufe.
-  - `FilterGalleryViewModel.cs` (`LensLab/ViewModels/FilterGalleryViewModel.cs`): Thumbnail-Generierung und Filterauswahl.
-  - `AdjustmentViewModel.cs` (`LensLab/ViewModels/AdjustmentViewModel.cs`): Slider-State und Opacity-Steuerung.
-- **Services (`LensLab.Services`):** Entkoppelte Hilfsklassen.
-  - `ImageProcessingService.cs` (`LensLab/Services/ImageProcessingService.cs`): Reines Pixel-Rendering im `Bgra32`-Format.
-  - `FilterLoaderService.cs` (`LensLab/Services/FilterLoaderService.cs`): Asynchrones Parsen der Preset-JSONs.
+  - `MainViewModel.cs` (`LensLab/ViewModels/MainViewModel.cs`): Orchestriert die Anwendungslogik und hängt ausschließlich von Service-Interfaces ab.
+  - `FilterGalleryViewModel.cs`: Thumbnail-Generierung, Filterauswahl und Keyboard-Navigation.
+  - `AdjustmentViewModel.cs`: Slider-State und Opacity-Steuerung.
+- **Services (`LensLab.Services`):** Interface-basierte Geschäftslogik (abstrahiert für maximale Testbarkeit).
+  - `IImageProcessingService` / `ImageProcessingService`: Reines Pixel-Rendering im `Bgra32`-Format.
+  - `IFilterLoaderService` / `FilterLoaderService`: Asynchrones Parsen der JSON-Presets.
+  - `IImageLoaderService` / `ImageLoaderService`: Asynchrones Laden und Skalieren von Bilddateien.
+  - `IImageExporterService` / `ImageExporterService`: Hintergrund-Export hochauflösender Bilder.
+  - `IPresetManagerService` / `PresetManagerService`: Verwalten & Speichern benutzerdefinierter Presets in `%APPDATA%`.
+  - `IRecentFilesService` / `RecentFilesService`: Datenbank-Verwaltung der zuletzt geöffneten Dateien.
+  - `IDialogService` / `DialogService` & `IFileDialogService` / `FileDialogService`: UI-entkoppelte Dialoge und Dateiauswahldialoge.
 
 ### 3.2 Asynchronität & Performance-Konzept
 1. **Zwei-Stufen-Rendering:** Um flüssige 60 FPS bei Slider-Bewegungen zu garantieren, werden Slider-Anpassungen in Echtzeit auf einer auf **1200 Pixel Kantenlänge skalierten Vorschau (`PreviewImage`)** berechnet. Erst beim finale Export wird die Pixel-Pipeline asynchron auf das volle `OriginalImage` angewendet.
@@ -173,11 +178,12 @@ $$V_{\text{neu}} = \operatorname{Clamp}_0^{255}\left(V_{\text{alt}} + n\right)$$
 
 | Paket / Framework | Version | Verwendungszweck |
 | :--- | :--- | :--- |
-| **`CommunityToolkit.Mvvm`** | `8.2.2` | MVVM-Boilerplate-Reduzierung (`[ObservableProperty]`, `[RelayCommand]`, `ObservableObject`). |
-| **`MahApps.Metro`** | `2.4.10` | Modernes Dark-Theme UI Framework (`MetroWindow`, Controls, Resource Dictionaries). |
-| **`MahApps.Metro.IconPacks`** | `4.11.0` | Bereitstellung sauberer Vektor-Icons (`PackIconMaterial`). |
-| **`Microsoft.EntityFrameworkCore.Sqlite`** | `8.0.2` | Object-Relational Mapper (ORM) & SQLite-Treiber für die History-Datenbank (`lenslab.db`). |
-| **`xUnit`** | `2.6.6` | Test-Framework für automatisierte Unit-Tests (`LensLab.Tests`). |
+| **`CommunityToolkit.Mvvm`** | `8.4.2` | MVVM-Boilerplate-Reduzierung (`[ObservableProperty]`, `[RelayCommand]`, `ObservableObject`). |
+| **`Microsoft.Extensions.DependencyInjection`** | `8.0.1` | IoC / Dependency Injection Container zur Entkopplung und Verwaltung aller Service-Interfaces. |
+| **`MahApps.Metro`** | `2.4.11` | Modernes Dark-Theme UI Framework (`MetroWindow`, Controls, Resource Dictionaries). |
+| **`MahApps.Metro.IconPacks.Material`** | `6.2.1` | Bereitstellung sauberer Vektor-Icons (`PackIconMaterial`). |
+| **`Microsoft.EntityFrameworkCore.Sqlite`** | `8.0.10` | Object-Relational Mapper (ORM) & SQLite-Treiber für die History-Datenbank (`lenslab.db`). |
+| **`xUnit`** | `2.6.6` | Test-Framework für 34 automatisierte Unit-Tests (`LensLab.Tests`). |
 
 ---
 
