@@ -175,7 +175,7 @@ public partial class FilterGalleryViewModel : ObservableObject
     /// Command to select the next filter in the gallery.
     /// </summary>
     [RelayCommand]
-    private void SelectNextFilter()
+    public void SelectNextFilter()
     {
         if (Filters == null || Filters.Count == 0) return;
 
@@ -190,7 +190,7 @@ public partial class FilterGalleryViewModel : ObservableObject
     /// Command to select the previous filter in the gallery.
     /// </summary>
     [RelayCommand]
-    private void SelectPreviousFilter()
+    public void SelectPreviousFilter()
     {
         if (Filters == null || Filters.Count == 0) return;
         

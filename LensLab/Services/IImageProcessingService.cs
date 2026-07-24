@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using LensLab.Models;
 
@@ -23,7 +24,7 @@ public interface IImageProcessingService
     /// <summary>
     /// Creates a frozen, thread-safe BitmapSource from raw BGRA pixel bytes.
     /// </summary>
-    BitmapSource CreateBitmapFromPixels(byte[] pixels, int width, int height, double dpiX, double dpiY);
+    BitmapSource CreateBitmapFromPixels(byte[] pixels, int width, int height, PixelFormat format, int stride);
 
     /// <summary>
     /// Extracts raw BGRA pixel bytes from a BitmapSource.

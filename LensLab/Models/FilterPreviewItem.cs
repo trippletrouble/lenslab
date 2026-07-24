@@ -10,14 +10,16 @@ namespace LensLab.Models;
 public partial class FilterPreviewItem : ObservableObject
 {
     /// <summary>
-    /// Gets the filter preset associated with this preview.
+    /// Gets or sets the filter preset associated with this preview.
     /// </summary>
-    public FilterPreset Filter { get; }
+    [ObservableProperty]
+    private FilterPreset _filter = null!;
 
     /// <summary>
-    /// Gets the thumbnail image with the filter applied.
+    /// Gets or sets the thumbnail image with the filter applied.
     /// </summary>
-    public BitmapSource? Thumbnail { get; }
+    [ObservableProperty]
+    private BitmapSource? _thumbnail;
 
     [ObservableProperty]
     private bool _isSelected;
@@ -25,10 +27,17 @@ public partial class FilterPreviewItem : ObservableObject
     /// <summary>
     /// Gets a value indicating whether this is a custom preset created by the user.
     /// </summary>
-    public bool IsCustom => Filter.Manufacturer != null && Filter.Manufacturer.Equals("User", System.StringComparison.OrdinalIgnoreCase);
+    public bool IsCustom => Filter?.Manufacturer != null && Filter.Manufacturer.Equals("User", System.StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterPreviewItem"/> class.
+    /// </summary>
+    public FilterPreviewItem()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FilterPreviewItem"/> class with parameters.
     /// </summary>
     /// <param name="filter">The filter preset.</param>
     /// <param name="thumbnail">The thumbnail image.</param>

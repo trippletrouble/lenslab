@@ -66,7 +66,7 @@ public class ImageProcessingServiceTests
             pixels[i + 3] = 255; // Alpha
         }
 
-        BitmapSource bitmap = _sut.CreateBitmapFromPixels(pixels, 2, 2, 96, 96);
+        BitmapSource bitmap = _sut.CreateBitmapFromPixels(pixels, 2, 2, System.Windows.Media.PixelFormats.Bgra32, 8);
 
         Assert.NotNull(bitmap);
         Assert.Equal(2, bitmap.PixelWidth);
