@@ -257,7 +257,7 @@ public partial class MainViewModel : ObservableObject
             StatusText = CurrentImage.FileName ?? "Image loaded";
 
             // Log to recent files database
-            _ = AddRecentFileAsync(filePath);
+            await AddRecentFileAsync(filePath);
 
             // Trigger thumbnail previews generation in parallel
             await FilterGallery.LoadFiltersAsync(loadedBitmap);
@@ -518,18 +518,35 @@ public partial class MainViewModel : ObservableObject
 
             var list = await db.RecentFiles
                 .OrderByDescending(f => f.LastOpened)
-                .Take(5)
+                .Take(10)
                 .ToListAsync();
 
-            RecentFiles.Clear();
-            foreach (var item in list)
+            // Filter out non-existent files to avoid showing stale paths from another machine
+            var validItems = list.Where(f => File.Exists(f.FilePath)).Take(5).ToList();
+
+            // Safely update ObservableCollection on WPF Dispatcher thread
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
             {
-                RecentFiles.Add(item);
+                dispatcher.Invoke(() => PopulateRecentFiles(validItems));
+            }
+            else
+            {
+                PopulateRecentFiles(validItems);
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error loading recent files: {ex.Message}");
+        }
+    }
+
+    private void PopulateRecentFiles(IEnumerable<RecentFile> items)
+    {
+        RecentFiles.Clear();
+        foreach (var item in items)
+        {
+            RecentFiles.Add(item);
         }
     }
 
